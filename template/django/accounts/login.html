@@ -1,0 +1,14 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}wappy - login{% endblock %}
+
+{% block content %}
+<form method="POST" action="{% url django.contrib.auth.views.login %}">
+    <table>
+        {{ form.as_table }}
+        <input type="hidden" name="next" value="/" />
+        <th></th><td><input type="submit" value="login" /></td>
+    </table>
+</form>
+<a href="/accounts/register/">create new account</a>
+{% endblock %}

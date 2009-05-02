@@ -1,0 +1,13 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}wappy - register{% endblock %}
+
+{% block content %}
+
+<form method="post" action="{% url backend.accounts.views.register %}">
+    <table>
+        {{ form.as_table }}
+        <th></th><td><input type="submit" value="register" /></td>
+    </table>
+</form>
+{% endblock %}

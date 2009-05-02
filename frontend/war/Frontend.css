@@ -1,0 +1,10 @@
+/** Add css rules here for your application. */
+.gwt-TabPanelBottom {
+    border: 3px solid #92C1F0;
+    overflow: hidden;
+    padding: 0px;
+}
+
+.wappy-mail-browser {
+    border-top: 3px solid #92C1F0;
+}
