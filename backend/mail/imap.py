@@ -1,4 +1,6 @@
 import imaplib
+import time
+from backend.mail.models import MailFolder, MailHeader
 
 
 class IMAPSynchronizer:
@@ -18,12 +20,73 @@ class IMAPSynchronizer:
         self.session = None
 
     def synchronize_folders(self):
-        response = self.session.list()
-        # @todo: check status code, parse response, create folders.
+        status, response = self.session.list()
+        if status == 'OK':
+            remote_paths = set()
+            for folder in response:
+                trash, parsed = parse_list('(' + folder + ')')
+                if len(parsed) == 3 and '\\Noselect' not in parsed[0]:
+                    remote_paths.add(parsed[2])
+            local_paths = set(
+                [folder.path for folder in self.account.folders.all()])
+            added_paths = remote_paths - local_paths
+            for path in added_paths:
+                self.account.folders.create(path=path)
+            removed_paths = local_paths - remote_paths
+            for path in removed_paths:
+                self.account.folders.filter(path=path).delete()
+
+    def synchronize_headers(self):
+        for folder in self.account.folders.all():
+            self._synchronize_folder_headers(folder)
+
+    def _synchronize_folder_headers(self, folder):
+        try:
+            last_uid = folder.headers.order_by('uid').reverse()[:1][0].uid
+            search_command = '(UID %d:*)' % (last_uid + 1, )
+        except:
+            search_command = 'ALL'
+        self.session.select('"' + folder.path + '"')
+        status, uids = self.session.uid('SEARCH', None, search_command)
+        if status == 'OK':
+            for uid in uids[0].split():
+                status, data = self.session.uid('FETCH', uid, 'ALL')
+                header = parse_header(data)
+                if header:
+                    header.folder = folder
+                    header.uid = uid
+                    header.save()
+                else:
+                    print 'could not parse:', data
+                #return # @todo: remove when bug free.
+        self.session.close()
 
 
-def parse_list(data, index):
-    """Helper routine for parsing imap responses."""
+# @todo: parse sender and recipients fields.
+def parse_header(data):
+    """Parses imap headers fetched with the imap all macro."""
+    parsed = create_dict(parse_list(data[0].partition(' ')[2])[1])
+    envelope = parsed['ENVELOPE']
+    if len(envelope) == 10:
+        header = MailHeader()
+        header.subject = envelope[1]
+        header.flags = ' '.join(parsed['FLAGS'])
+        header.timestamp = time.mktime(
+            time.strptime(parsed['INTERNALDATE'], '%d-%b-%Y %H:%M:%S +0000'))
+        return header
+    return None
+
+def create_dict(list_):
+    """Create dictionary from list where keys and values are alternating."""
+    if len(list_) % 2:
+        raise Exception("Even number of list items expected.")
+    result = {}
+    for i in range(0, len(list_), 2):
+        result[list_[i]] = list_[i + 1]
+    return result
+
+def parse_list(data, index=0):
+    """Generic helper routine for parsing imap responses."""
     if index < len(data) and data[index] == '(':
         result = []
         index += 1
@@ -47,7 +110,7 @@ def parse_list(data, index):
         return index, []
 
 def parse_literal(data, index):
-    """Helper routine for parsing imap responses."""
+    """Generic helper routine for parsing imap responses."""
     literal = ''
     while index < len(data):
         if data[index] in (' ', ')'):
@@ -61,7 +124,7 @@ def parse_literal(data, index):
         return index, literal
 
 def parse_string(data, index):
-    """Helper routine for parsing imap responses."""
+    """Generic helper routine for parsing imap responses."""
     if index < len(data) and data[index] == '"':
         s = ''
         index += 1
