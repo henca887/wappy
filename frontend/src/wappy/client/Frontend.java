@@ -3,6 +3,7 @@ package wappy.client;
 import com.google.gwt.core.client.EntryPoint;
 
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 
 import com.extjs.gxt.ui.client.event.ButtonEvent;  
 import com.extjs.gxt.ui.client.event.SelectionListener;  
@@ -16,27 +17,52 @@ import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout; 
 
 import wappy.client.mail.MailClient;
+import wappy.client.calendar.Calendar;
 
 public class Frontend implements EntryPoint {
-    public void onModuleLoad() {
-        final Window window = new Window();  
-        window.setSize(800, 600);  
-        window.setPlain(true);  
-        window.setHeading("Mail");  
-        window.setLayout(new FitLayout());  
-        
-        window.add(new MailClient());
+    Window mailWindow = new Window();
+    Window calendarWindow = new Window();
+    HorizontalPanel toolBar = new HorizontalPanel();
 
-        Button btn = new Button("Mail");  
-        btn.addSelectionListener(new SelectionListener<ButtonEvent>() {  
+    public void onModuleLoad() {
+        mailWindow.setSize(800, 600);  
+        mailWindow.setPlain(true);  
+        mailWindow.setHeading("Mail");  
+        mailWindow.setLayout(new FitLayout());  
+        mailWindow.add(new MailClient());
+
+        Button mailButton = new Button("Mail");  
+        mailButton.addSelectionListener(new SelectionListener<ButtonEvent>() {  
           @Override  
           public void componentSelected(ButtonEvent ce) {  
-            window.show();
-            window.toFront();
+            mailWindow.show();
+            mailWindow.toFront();
+          }  
+        });
+
+        //RootPanel.get().add(mailButton);
+
+        calendarWindow.setSize(800, 600);  
+        calendarWindow.setPlain(true);  
+        calendarWindow.setHeading("Calendar");  
+        calendarWindow.setLayout(new FitLayout());  
+        calendarWindow.add(new Calendar());
+
+        Button calendarButton = new Button("Calendar");  
+        calendarButton.addSelectionListener(new SelectionListener<ButtonEvent>() {  
+          @Override  
+          public void componentSelected(ButtonEvent ce) {  
+            calendarWindow.show();
+            calendarWindow.toFront();
           }  
         });  
-        
-        RootPanel.get().add(btn);
+
+        //RootPanel.get().add(calendarButton);
+
+        toolBar.add(mailButton);
+        toolBar.add(calendarButton);
+
+        RootPanel.get().add(toolBar);
     }
 
     // private Widget createHeader() {
