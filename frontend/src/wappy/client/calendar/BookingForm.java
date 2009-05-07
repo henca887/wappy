@@ -3,42 +3,39 @@
 package wappy.client.calendar;
 
 import java.util.Date;
-
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DateBox;
-import com.google.gwt.user.datepicker.client.DatePicker;
 
 public class BookingForm extends DialogBox{
 	
-	//private static PopupPanel popup = new PopupPanel();
 	private VerticalPanel popupContent = new VerticalPanel();
 	private HorizontalPanel timePanel = new HorizontalPanel();
 	private HorizontalPanel headerPanel = new HorizontalPanel();
 	private HorizontalPanel buttonsPanel = new HorizontalPanel();
+	private HorizontalPanel subjectPanel = new HorizontalPanel();
+	private HorizontalPanel datePanel = new HorizontalPanel();
 	private VerticalPanel propertyPanel = new VerticalPanel();
 	
 	private	CheckBox property1 = new CheckBox("Property 1");
 	private	CheckBox property2 = new CheckBox("Property 2");
 	private	CheckBox property3 = new CheckBox("Property 3");
 	
-	private TimeListBox startTime = new TimeListBox();
-	private TimeListBox endTime = new TimeListBox();
-	private Date dateInput;		// = new Date();
+	private TimeListBox startTimeInput = new TimeListBox();
+	private TimeListBox endTimeInput = new TimeListBox();
+
 	private DateBox dateBox = new DateBox();
-//	private DatePicker datePicker = new DatePicker();
 	private TextBox subjectInput = new TextBox();
 	private TextArea descriptionInput = new TextArea();
 	
@@ -55,15 +52,21 @@ public class BookingForm extends DialogBox{
 		doneWithBooking = false;
 		setText("Add new appointment to the calendar");
 		
-		timePanel.add(startTime);
-		timePanel.add(endTime);
+		timePanel.add(new HTML("Start"));
+		timePanel.add(startTimeInput);
+		timePanel.add(new HTML("Finish"));
+		timePanel.add(endTimeInput);
 		
+		subjectPanel.add(new HTML("Subject"));
+		subjectPanel.add(subjectInput);
 		property1.setValue(true);
 		
 		propertyPanel.add(property1);
 		propertyPanel.add(property2);
 		propertyPanel.add(property3);
 		
+		datePanel.add(new HTML("Date"));
+		datePanel.add(dateBox);
 		dateBox.setFormat(new DateBox.DefaultFormat(
 				DateTimeFormat.getFullDateFormat()));
 		//dateBox.getDatePicker();
@@ -75,9 +78,9 @@ public class BookingForm extends DialogBox{
 		buttonsPanel.add(cancelButton);
 		
 		popupContent.add(timePanel);
-		popupContent.add(dateBox);
+		popupContent.add(datePanel);
 		popupContent.add(headerPanel);
-		popupContent.add(subjectInput);
+		popupContent.add(subjectPanel);
 		popupContent.add(descriptionInput);
 		popupContent.add(buttonsPanel);
 		setWidget(popupContent);
@@ -87,13 +90,10 @@ public class BookingForm extends DialogBox{
 				closeBookingForm();
 			}
 		});
-
-//		datePicker.addValueChangeHandler(new ValueChangeHandler<Date>() {
-//			public void onValueChange(ValueChangeEvent<Date> event) {
-//				setDateInput(event.getValue());
-//				
-//			}
-//		});
+		
+		// Add styles
+		//addStyleName("wappy-calendar-bookingForm");
+		//dateBox.getDatePicker().addStyleName("wappy-calendar-bookingForm-picker");
 	}
 
 	private boolean isSubjectValid() {
@@ -116,14 +116,31 @@ public class BookingForm extends DialogBox{
 	private void createNewAppointment() {
 		// Create Appointment from inputed data
 		// TODO Look at DateTimeFormat
-		appointment = new Appointment(subjectInput.getText(), descriptionInput.getText(),
-				dateBox.getValue());
-		newAppointmentCreated = true;
+
+		//		Date date = dateBox.getValue();
+		String startTime = startTimeInput.getValue((startTimeInput.getSelectedIndex()));
+		String endTime = endTimeInput.getValue((endTimeInput.getSelectedIndex()));
+
+//		int startHour = Integer.parseInt(startTime.split(":")[0]);
+//		int startMin = Integer.parseInt(startTime.split(":")[1]);
+//		int endHour = Integer.parseInt(endTime.split(":")[0]);
+//		int endMin = Integer.parseInt(endTime.split(":")[1]);
+//		int year = WappyDateTime.getYearNr(date);
+//		int month = WappyDateTime.getMonthNr(date);
+//		int dayNr =  WappyDateTime.getDayNr(date);
+//		
+//		GregorianCalendar startCal = new GregorianCalendar(year, month, dayNr, startHour, startMin, 0);
+//		GregorianCalendar endCal = 	new GregorianCalendar(year, month, dayNr, endHour, endMin, 0);
+//		Date startDate = startCal.getTime();
+//		Date endDate = endCal.getTime();
 		
-	}
+		appointment = new Appointment(subjectInput.getText(), descriptionInput.getText(),
+				dateBox.getValue(), startTime, endTime);
+		newAppointmentCreated = true;
 	
-	private void setDateInput(Date dateInput) {
-		this.dateInput = dateInput;
+//		Window.alert("subject: " + subjectInput.getText() + "\ndesc: " +
+//				descriptionInput.getText() + "\nStartTime: " + startTime +
+//				"\nEndTime: " + endTime);
 	}
 	
 	protected void closeBookingForm() {
@@ -151,6 +168,7 @@ public class BookingForm extends DialogBox{
 
 	public void showBookingForm() {
 		newAppointmentCreated = false;
+		
 		setPopupPositionAndShow(new PopupPanel.PositionCallback() {
 			public void setPosition(int offsetWidth, int offsetHeight) {
 				int left = (Window.getClientWidth() - offsetWidth) / 3;

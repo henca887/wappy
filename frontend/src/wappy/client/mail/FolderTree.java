@@ -3,6 +3,7 @@ package wappy.client.mail;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
+import com.google.gwt.user.client.ui.TreeListener;
 
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
@@ -16,23 +17,29 @@ import com.pathf.gwt.util.json.client.JSONWrapper;
 
 import com.extjs.gxt.ui.client.widget.ContentPanel; 
 
-//public class FolderTree extends Composite {
-public class FolderTree extends ContentPanel {
+
+public class FolderTree extends ContentPanel implements TreeListener {
     private MessageList messageList;
     private Tree folderTree = new Tree();
 
     public FolderTree(MessageList messageList) {
         this.messageList = messageList;
+        folderTree.addTreeListener(this);
         setHeading("Folders");
-        
-        folderTree.addItem("Hello").addItem("World");
-        
+
         refresh();
-        
-        messageList.display("INBOX");
 
         add(folderTree);
-        //initWidget(folderTree);
+    }
+
+    public void onTreeItemSelected(TreeItem item) {
+        String path = (String)item.getUserObject();
+        if (path != null) {
+            messageList.display(path);
+        }
+    }
+
+    public void onTreeItemStateChanged(TreeItem item) {
     }
 
     public void refresh() {
@@ -66,6 +73,7 @@ public class FolderTree extends ContentPanel {
             for (int i = 0; i < tree.size(); i++) {
                 TreeItem next = folderTree.addItem(
                     tree.get(i).get("name").stringValue());
+                next.setUserObject(next.getText());
                 buildTree(tree.get(i).get("childs"), next);
             }
         }
@@ -73,6 +81,8 @@ public class FolderTree extends ContentPanel {
             for (int i = 0; i < tree.size(); i++) {
                 TreeItem next = node.addItem(
                     tree.get(i).get("name").stringValue());
+                next.setUserObject(
+                    ((String)node.getUserObject()) + "/" + next.getText());
                 buildTree(tree.get(i).get("childs"), next);
             }
         }

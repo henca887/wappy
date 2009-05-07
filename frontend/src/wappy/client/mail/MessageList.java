@@ -28,17 +28,24 @@ import com.extjs.gxt.ui.client.data.ScriptTagProxy;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
-import com.google.gwt.i18n.client.DateTimeFormat;  
+import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.http.client.URL;
+
 
 public class MessageList extends ContentPanel {
+    private static final int messagesPerPage = 30;
+    
     private MessageView messageView;
+    
+    private ScriptTagProxy<PagingLoadResult<ModelData>> proxy;
+    PagingLoader<PagingLoadResult<ModelData>> loader;
 
     public MessageList(MessageView messageView) {
         this.messageView = messageView;
 
         String url = "/mail/messages/";
-        ScriptTagProxy<PagingLoadResult<ModelData>> proxy =
-            new ScriptTagProxy<PagingLoadResult<ModelData>>(url);
+        //ScriptTagProxy<PagingLoadResult<ModelData>> proxy =
+        proxy = new ScriptTagProxy<PagingLoadResult<ModelData>>(url);
 
         ModelType type = new ModelType();
         type.setRoot("results");
@@ -51,34 +58,38 @@ public class MessageList extends ContentPanel {
         dateField.setFormat("timestamp");
         type.addField(dateField);
 
-        JsonLoadResultReader<PagingLoadResult<ModelData>> reader = new JsonLoadResultReader<PagingLoadResult<ModelData>>(
-            type) {
-          @Override
-          protected ListLoadResult<ModelData> newLoadResult(Object loadConfig,
-              List<ModelData> models) {
-            PagingLoadConfig pagingConfig = (PagingLoadConfig) loadConfig;
-            PagingLoadResult<ModelData> result = new BasePagingLoadResult<ModelData>(models,
-                pagingConfig.getOffset(), pagingConfig.getLimit());
-            return result;
-          }
+        JsonLoadResultReader<PagingLoadResult<ModelData>> reader =
+            new JsonLoadResultReader<PagingLoadResult<ModelData>>(type) {
+            @Override
+            protected ListLoadResult<ModelData> newLoadResult(
+                    Object loadConfig, List<ModelData> models) {
+                PagingLoadConfig pagingConfig =
+                    (PagingLoadConfig)loadConfig;
+                PagingLoadResult<ModelData> result =
+                    new BasePagingLoadResult<ModelData>(models,
+                        pagingConfig.getOffset(), pagingConfig.getLimit());
+                return result;
+            }
         };
 
-        PagingLoader<PagingLoadResult<ModelData>> loader = new BasePagingLoader<PagingLoadResult<ModelData>>(
-            proxy, reader);
+        //PagingLoader<PagingLoadResult<ModelData>> loader =
+        loader = new BasePagingLoader<PagingLoadResult<ModelData>>(proxy,
+                                                                   reader);
 
         loader.addListener(Loader.BeforeLoad, new Listener<LoadEvent>() {
-          public void handleEvent(LoadEvent be) {
-            be.<ModelData> getConfig().set("start", be.<ModelData> getConfig().get("offset"));
-          }
+            public void handleEvent(LoadEvent be) {
+                be.<ModelData> getConfig().set(
+                    "start", be.<ModelData> getConfig().get("offset"));
+            }
         });
     
         loader.setRemoteSort(true);
 
-        loader.load(0, 30);
+        //loader.load(0, messagesPerPage);
 
         ListStore<ModelData> store = new ListStore<ModelData>(loader);
 
-        final PagingToolBar toolBar = new PagingToolBar(30);
+        final PagingToolBar toolBar = new PagingToolBar(messagesPerPage);
         toolBar.bind(loader);
 
         List<ColumnConfig> columns = new ArrayList<ColumnConfig>();
@@ -107,6 +118,8 @@ public class MessageList extends ContentPanel {
         setBottomComponent(toolBar);
     }
 
-    public void display(String folderPath) {
+    public void display(String path) {
+        proxy.setUrl("/mail/messages/?path=" + URL.encodeComponent(path));
+        loader.load(0, messagesPerPage);
     }
 }

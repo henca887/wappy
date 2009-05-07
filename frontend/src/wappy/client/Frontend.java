@@ -5,16 +5,15 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 
-import com.extjs.gxt.ui.client.event.ButtonEvent;  
-import com.extjs.gxt.ui.client.event.SelectionListener;  
-import com.extjs.gxt.ui.client.widget.LayoutContainer;  
-import com.extjs.gxt.ui.client.widget.TabItem;  
-import com.extjs.gxt.ui.client.widget.TabPanel;  
-import com.extjs.gxt.ui.client.widget.Window;  
-import com.extjs.gxt.ui.client.widget.button.Button;  
-import com.extjs.gxt.ui.client.widget.layout.FitData;  
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;  
-import com.extjs.gxt.ui.client.widget.layout.FlowLayout; 
+import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.TabItem;
+import com.extjs.gxt.ui.client.widget.TabPanel;
+import com.extjs.gxt.ui.client.widget.Window;
+import com.extjs.gxt.ui.client.widget.button.Button;
+import com.extjs.gxt.ui.client.widget.layout.FitData;
+import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 
 import wappy.client.mail.MailClient;
 import wappy.client.calendar.Calendar;
@@ -31,36 +30,42 @@ public class Frontend implements EntryPoint {
         mailWindow.setLayout(new FitLayout());  
         mailWindow.add(new MailClient());
 
-        Button mailButton = new Button("Mail");  
-        mailButton.addSelectionListener(new SelectionListener<ButtonEvent>() {  
-          @Override  
-          public void componentSelected(ButtonEvent ce) {  
-            mailWindow.show();
-            mailWindow.toFront();
-          }  
-        });
-
-        //RootPanel.get().add(mailButton);
-
         calendarWindow.setSize(800, 600);  
         calendarWindow.setPlain(true);  
         calendarWindow.setHeading("Calendar");  
         calendarWindow.setLayout(new FitLayout());  
         calendarWindow.add(new Calendar());
 
-        Button calendarButton = new Button("Calendar");  
-        calendarButton.addSelectionListener(new SelectionListener<ButtonEvent>() {  
-          @Override  
-          public void componentSelected(ButtonEvent ce) {  
-            calendarWindow.show();
-            calendarWindow.toFront();
-          }  
-        });  
+        Button mailButton = new Button("Mail");  
+        mailButton.addSelectionListener(new SelectionListener<ButtonEvent>() {  
+            @Override  
+            public void componentSelected(ButtonEvent ce) {  
+                mailWindow.show();
+                mailWindow.toFront();
+            }  
+        });
 
-        //RootPanel.get().add(calendarButton);
+        Button calendarButton = new Button("Calendar");
+        calendarButton.addSelectionListener(new SelectionListener<ButtonEvent>() {  
+            @Override  
+            public void componentSelected(ButtonEvent ce) {  
+                calendarWindow.show();
+                calendarWindow.toFront();
+            }  
+        });
+        
+        Button logoutButton = new Button("Logout");  
+        logoutButton.addSelectionListener(new SelectionListener<ButtonEvent>() {  
+            @Override  
+            public void componentSelected(ButtonEvent ce) {  
+                com.google.gwt.user.client.Window.Location.assign(
+                    "/accounts/logout/");
+            }  
+        });  
 
         toolBar.add(mailButton);
         toolBar.add(calendarButton);
+        toolBar.add(logoutButton);
 
         RootPanel.get().add(toolBar);
     }

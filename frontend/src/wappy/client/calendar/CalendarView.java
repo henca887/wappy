@@ -39,9 +39,15 @@ public class CalendarView extends Composite {
 
 	public void update(Appointment appointment) {
 		int row = mainContent.getRowCount();
-		Date date = appointment.getDate();
-		mainContent.setText(row, 0, WappyDateTime.getDay(date));
-		
+//		Date date = appointment.getStartDate();
+//		mainContent.setText(row, 0, WappyDateTime.getDay(date));
+		mainContent.setText(row, 0, appointment.getWeekDay());
+		mainContent.setText(row, 1, appointment.getYear() + "-" + 
+				appointment.getMonth() + "-" + appointment.getDay());
+		mainContent.setText(row, 2, appointment.getStartHour() + ":" + appointment.getStartMin());
+		mainContent.setText(row, 3, appointment.getEndHour() + ":" + appointment.getEndMin());
+		mainContent.setText(row, 4, appointment.getSubject());
+		mainContent.setText(row, 5, appointment.getDescription());
 //		mainContent.setText(row +1, 1, DateTimeFormat.getFullDateTimeFormat().format(date));
 //		mainContent.setText(row +2, 1, DateTimeFormat.getLongDateTimeFormat().format(date));
 //		mainContent.setText(row +3, 1, DateTimeFormat.getMediumDateTimeFormat().format(date));

@@ -1,6 +1,6 @@
 # Django settings for backend project.
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -75,6 +75,7 @@ INSTALLED_APPS = (
     'backend.welcome',
     'backend.accounts',
     'backend.mail',
+    'backend.wcalendar',
 )
 
 LOGIN_REDIRECT_URL = '/frontend/Frontend.html'

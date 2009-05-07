@@ -45,20 +45,21 @@ class IMAPSynchronizer:
             last_uid = folder.headers.order_by('uid').reverse()[:1][0].uid
             search_command = '(UID %d:*)' % (last_uid + 1, )
         except:
+            last_uid = 0
             search_command = 'ALL'
         self.session.select('"' + folder.path + '"')
         status, uids = self.session.uid('SEARCH', None, search_command)
         if status == 'OK':
             for uid in uids[0].split():
-                status, data = self.session.uid('FETCH', uid, 'ALL')
-                header = parse_header(data)
-                if header:
-                    header.folder = folder
-                    header.uid = uid
-                    header.save()
-                else:
-                    print 'could not parse:', data
-                #return # @todo: remove when bug free.
+                if int(uid) > last_uid:
+                    status, data = self.session.uid('FETCH', uid, 'ALL')
+                    header = parse_header(data)
+                    if header:
+                        header.folder = folder
+                        header.uid = uid
+                        header.save()
+                    else:
+                        print 'could not parse:', data
         self.session.close()
 
 

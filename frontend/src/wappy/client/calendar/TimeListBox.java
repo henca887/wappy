@@ -21,6 +21,20 @@ public class TimeListBox extends ListBox {
 		addItem("08:00");
 		addItem("09:00");
 		addItem("10:00");
+		addItem("11:00");
+		addItem("12:00");
+		addItem("13:00");
+		addItem("14:00");
+		addItem("15:00");
+		addItem("16:00");
+		addItem("17:00");
+		addItem("18:00");
+		addItem("19:00");
+		addItem("20:00");
+		addItem("21:00");
+		addItem("22:00");
+		addItem("23:00");
+		addItem("24:00");
 		
 	}
 }

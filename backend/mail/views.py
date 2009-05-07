@@ -30,7 +30,7 @@ def accounts_create(request):
         account.user = request.user
         account.name = kwargs['name']
         account.server_address = kwargs['server_address']
-        account.server_port = kwargs['server_port']
+        account.server_port = int(kwargs['server_port'])
         account.username = kwargs['username']
         account.password = kwargs['password']
         account.save()
@@ -42,7 +42,7 @@ def accounts_create(request):
         except:
             account.delete()
             return HttpResponse(
-                simplejson.dumps({'error': 'Account is unreachable!',
+                simplejson.dumps({'error': 'Login failed!',
                                   'result': None}),
                 mimetype='application/javascript')
         return HttpResponse(
@@ -54,7 +54,6 @@ def accounts_create(request):
 def synchronize(request):
     """ Synchronizes all accounts fully. """
     accounts = MailAccount.objects.filter(user=request.user)
-    print accounts.values()
     error = None
     result = 'ok'
     for account in accounts:
@@ -86,21 +85,26 @@ def folders(request):
 
 @login_required_json
 def messages(request):
-    """Fetch message headers"""
-    #msg = '{"subject":"subject1","sender":"sender1","date":"date1"},{"subject":"subject2","sender":"sender2","date":"date2"}'
-    #respstr = request.GET['callback'] + '({"total":"1","results":[' + msg + ']});'
-    
+    """Fetch message headers"""    
+    path = request.GET.get('path', None)
     callback = request.GET['callback']
     start = int(request.GET['start'])
     offset = int(request.GET['offset'])
     limit = int(request.GET['limit'])
     sort_dir = request.GET['sortDir']
 
-    account = [a for a in MailAccount.objects.filter(user=request.user)][0]
-    folder = [f for f in account.folders.filter(path='INBOX')][0]
+    try:
+        account_name, sep, folder_path = path.partition('/')
+        account = MailAccount.objects.get(user=request.user, name=account_name)
+        folder = account.folders.get(path=folder_path)
+    except:
+        result = {'results': [], 'total': '0'}
+        return HttpResponse(
+        '%s(%s);' % (callback, simplejson.dumps(result)),
+        mimetype='application/javascript')
 
     messages = []
-    
+
     headers = [h for h in folder.headers.all().order_by('timestamp').reverse()]
     
     for i in range(offset, min(offset+limit, len(headers))):

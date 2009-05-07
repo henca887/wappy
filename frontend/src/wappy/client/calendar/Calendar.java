@@ -9,6 +9,7 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
@@ -47,8 +48,8 @@ public class Calendar extends Composite implements ClickHandler {
 		headerInfoPanel.add(new HTML("This is the Calendar header"));
 		
 		headerCtrlPanel.add(addButton);
-		headerCtrlPanel.add(previousWeekButton);
-		headerCtrlPanel.add(nextWeekButton);
+//		headerCtrlPanel.add(previousWeekButton);
+//		headerCtrlPanel.add(nextWeekButton);
 		
 		calHeader.setWidth("100%");
 		calHeader.addStyleName("wappy-calendar-header");
@@ -97,10 +98,22 @@ public class Calendar extends Composite implements ClickHandler {
 		appointments.add(appointment); // fakeDB
 		
 		// Packing data into JSON format to send to server
-		JSONObject jsonArgs = new JSONObject();
+		final JSONObject jsonArgs = new JSONObject();
     	jsonArgs.put("subject", new JSONString(appointment.getSubject()));
     	jsonArgs.put("description", new JSONString(appointment.getDescription()));
-    	jsonArgs.put("day", new JSONString(WappyDateTime.getDay(appointment.getDate() )));
+    	jsonArgs.put("year", new JSONString(appointment.getYear()));
+    	jsonArgs.put("month", new JSONString(appointment.getMonth()));
+    	jsonArgs.put("day", new JSONString(appointment.getDay()));
+    	jsonArgs.put("week_day", new JSONString(appointment.getWeekDay()));
+    	
+    	jsonArgs.put("start_hour", new JSONString(appointment.getStartHour()));
+    	jsonArgs.put("start_min", new JSONString(appointment.getStartMin()));
+    	jsonArgs.put("end_hour", new JSONString(appointment.getEndHour()));
+    	jsonArgs.put("end_min", new JSONString(appointment.getEndMin()));
+//    	jsonArgs.put("property1", new JSONBoolean(appointment.isProperty1()));
+//    	jsonArgs.put("property2", new JSONBoolean(appointment.isProperty2()));
+//    	jsonArgs.put("property3", new JSONBoolean(appointment.isProperty3()));
+    	
     	
     	//String testStr = "{\"subject\":\"test\",\"description\":\"test\",\"day\":\"testday\"}";
         
@@ -119,10 +132,11 @@ public class Calendar extends Composite implements ClickHandler {
                         JSONValue jsonValue = JSONParser.parse(response.getText());
                         JSONObject jsonObject = jsonValue.isObject();
 
-                        Window.alert(jsonObject.get("result").isString().stringValue());
+                        Window.alert("DEBUG: " + jsonObject.get("result").isString().stringValue());
                     }
                     else {
-                        Window.alert("Http Error =(");
+                        Window.alert("Http Error =(" + "\n"
+                        		+ jsonArgs.toString());
                     }
                 }       
             });

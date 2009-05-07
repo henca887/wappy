@@ -11,4 +11,5 @@ urlpatterns = patterns('',
     (r'^accounts/register/$', 'backend.accounts.views.register'),
     (r'^$', 'backend.welcome.views.index'),
     (r'^mail/', include('backend.mail.urls')),
+    (r'^wcalendar/', include('backend.wcalendar.urls')),
 )
