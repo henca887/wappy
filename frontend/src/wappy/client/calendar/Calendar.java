@@ -2,6 +2,9 @@ package wappy.client.calendar;
 
 import java.util.ArrayList;
 
+import com.extjs.gxt.ui.client.Style.Scroll;
+import com.extjs.gxt.ui.client.widget.Dialog;
+import com.extjs.gxt.ui.client.widget.Info;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.Request;
@@ -32,15 +35,19 @@ public class Calendar extends Composite implements ClickHandler {
 	
 	private Button confirmButton = new Button("Confirm");
 	private Button addButton = new Button("Add");
+	private Button addButton2 = new Button("Add2");
 	private Button nextWeekButton = new Button("Next week");
 	private Button previousWeekButton = new Button("Previous week");
 	
 	private BookingForm bookingForm;
+	private BookingForm2 bookingForm2;
+	
 	private CalendarView calView = new CalendarView();
 	private ArrayList<Appointment> appointments = new ArrayList<Appointment>();
 	
 	public Calendar() {
 		addButton.addClickHandler(this);
+		addButton2.addClickHandler(this);
 		nextWeekButton.addClickHandler(this);
 		previousWeekButton.addClickHandler(this);
 		confirmButton.addClickHandler(this);
@@ -48,6 +55,8 @@ public class Calendar extends Composite implements ClickHandler {
 		headerInfoPanel.add(new HTML("This is the Calendar header"));
 		
 		headerCtrlPanel.add(addButton);
+		headerCtrlPanel.add(addButton2);
+		
 //		headerCtrlPanel.add(previousWeekButton);
 //		headerCtrlPanel.add(nextWeekButton);
 		
@@ -69,6 +78,9 @@ public class Calendar extends Composite implements ClickHandler {
 		Object sender = event.getSource();
 		if (sender == addButton) {
 			openBookingForm();
+		}
+		else if (sender == addButton2) {
+			openBookingForm2();
 		}
 		else if (sender == confirmButton) {
 			validateBooking();
@@ -154,6 +166,22 @@ public class Calendar extends Composite implements ClickHandler {
 	private void openBookingForm() {
 		bookingForm = new BookingForm(confirmButton);
 		bookingForm.showBookingForm();
+	}
+
+	private void openBookingForm2() {
+		bookingForm2 = new BookingForm2();
+
+//		final Dialog dialog = new Dialog();
+//		dialog.setWidth(350);
+//		dialog.setHeading("Add appointment dialog");
+//		dialog.setButtons(Dialog.YESNOCANCEL);
+//		dialog.setScrollMode(Scroll.AUTO);
+//		dialog.setHideOnButtonClick(true);
+//		
+//		dialog.add(bookingForm2);
+//		dialog.show();
+		
+		Info.display(null, "Add2 was pressed");
 	}
 
 }
