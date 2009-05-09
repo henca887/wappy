@@ -86,14 +86,13 @@ def folders(request):
 @login_required_json
 def messages(request):
     """Fetch message headers"""    
-    path = request.GET.get('path', None)
-    callback = request.GET['callback']
-    start = int(request.GET['start'])
-    offset = int(request.GET['offset'])
-    limit = int(request.GET['limit'])
-    sort_dir = request.GET['sortDir']
-
     try:
+        path = request.GET.get('path', None)
+        callback = request.GET['callback']
+        offset = int(request.GET['offset'])
+        limit = int(request.GET['limit'])
+        sort_dir = request.GET['sortDir']
+    
         account_name, sep, folder_path = path.partition('/')
         account = MailAccount.objects.get(user=request.user, name=account_name)
         folder = account.folders.get(path=folder_path)
@@ -104,12 +103,12 @@ def messages(request):
         mimetype='application/javascript')
 
     messages = []
-
     headers = [h for h in folder.headers.all().order_by('timestamp').reverse()]
     
     for i in range(offset, min(offset+limit, len(headers))):
         header = headers[i]
         messages.append({
+            'uid': '%d' % header.uid,
             'subject': header.subject,
             'sender': 'unknown',
             'date': '%d' % header.timestamp
@@ -120,3 +119,23 @@ def messages(request):
     return HttpResponse(
         '%s(%s);' % (callback, simplejson.dumps(result)),
         mimetype='application/javascript')
+
+@login_required_json 
+def messages_content(request):
+    """ @todo """
+    kwargs = simplejson.loads(request.raw_post_data)
+    try:
+        path = kwargs['path']
+        uid = int(kwargs['uid'])
+        account_name, sep, folder_path = path.partition('/')
+        account = request.user.mail_accounts.get(name=account_name)
+        synchronizer = IMAPSynchronizer(account)
+        synchronizer.login()
+        message_text = synchronizer.fetch_message(folder_path, uid)
+        synchronizer.logout()
+    except Exception as e:
+        print e
+        message_text = "failed to fetch message"
+    result = {'content': message_text}    
+    return HttpResponse(simplejson.dumps(result),
+                        mimetype='application/javascript')

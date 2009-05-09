@@ -7,4 +7,5 @@ urlpatterns = patterns('backend.mail.views',
     (r'^synchronize/$', 'synchronize'),
     (r'^folders/$', 'folders'),
     (r'^messages/$', 'messages'),
+    (r'^messages/content/$', 'messages_content'),
 )

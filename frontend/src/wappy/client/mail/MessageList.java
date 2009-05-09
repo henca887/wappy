@@ -25,9 +25,12 @@ import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.PagingLoader;
 import com.extjs.gxt.ui.client.data.ScriptTagProxy;
 
+import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.http.client.URL;
 
@@ -39,17 +42,18 @@ public class MessageList extends ContentPanel {
     
     private ScriptTagProxy<PagingLoadResult<ModelData>> proxy;
     PagingLoader<PagingLoadResult<ModelData>> loader;
+    String path = "";
 
-    public MessageList(MessageView messageView) {
-        this.messageView = messageView;
+    public MessageList(MessageView mv) {
+        this.messageView = mv;
 
         String url = "/mail/messages/";
-        //ScriptTagProxy<PagingLoadResult<ModelData>> proxy =
         proxy = new ScriptTagProxy<PagingLoadResult<ModelData>>(url);
 
         ModelType type = new ModelType();
         type.setRoot("results");
         type.setTotalName("total");
+        type.addField("uid", "uid");
         type.addField("subject", "subject");
         type.addField("sender", "sender");
 
@@ -72,7 +76,6 @@ public class MessageList extends ContentPanel {
             }
         };
 
-        //PagingLoader<PagingLoadResult<ModelData>> loader =
         loader = new BasePagingLoader<PagingLoadResult<ModelData>>(proxy,
                                                                    reader);
 
@@ -84,8 +87,6 @@ public class MessageList extends ContentPanel {
         });
     
         loader.setRemoteSort(true);
-
-        //loader.load(0, messagesPerPage);
 
         ListStore<ModelData> store = new ListStore<ModelData>(loader);
 
@@ -106,6 +107,18 @@ public class MessageList extends ContentPanel {
         grid.setAutoExpandColumn("subject");
         grid.setSize("100%", "100%");
 
+        grid.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        grid.getSelectionModel().addListener(Events.SelectionChange,
+            new Listener<SelectionChangedEvent<ModelData>>() {
+                public void handleEvent(SelectionChangedEvent<ModelData> be) {
+                    if (be.getSelection().size() > 0) {
+                        ModelData md = (ModelData)be.getSelection().get(0);
+                        messageView.display(MessageList.this.path,
+                                            (String)md.get("uid"));
+                    }
+                }
+            });
+
         setFrame(true);
         setCollapsible(false);
         setAnimCollapse(false);
@@ -119,6 +132,7 @@ public class MessageList extends ContentPanel {
     }
 
     public void display(String path) {
+        this.path = path;
         proxy.setUrl("/mail/messages/?path=" + URL.encodeComponent(path));
         loader.load(0, messagesPerPage);
     }

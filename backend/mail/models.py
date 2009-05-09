@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 
 class MailAccount(models.Model):
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, related_name='mail_accounts')
     name = models.CharField(max_length=64)
     server_address = models.CharField(max_length=128)
     server_port = models.IntegerField()

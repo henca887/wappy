@@ -1,4 +1,5 @@
 import imaplib
+import email
 import time
 from backend.mail.models import MailFolder, MailHeader
 
@@ -39,6 +40,20 @@ class IMAPSynchronizer:
     def synchronize_headers(self):
         for folder in self.account.folders.all():
             self._synchronize_folder_headers(folder)
+
+    def fetch_message(self, path, uid):
+        self.session.select('"' + path + '"')
+        status, data = self.session.uid('FETCH', uid, 'RFC822')
+        message = email.message_from_string(data[0][1])
+        message_text = ''
+        for part in message.walk():
+            if part.get_content_type() == 'text/html':
+                message_text = part.get_payload(decode=True)
+                break # use text/html when available
+            elif part.get_content_type() == 'text/plain':
+                message_text = part.get_payload(decode=True)
+        self.session.close()
+        return message_text if message_text else 'Unknown message type!'
 
     def _synchronize_folder_headers(self, folder):
         try:
