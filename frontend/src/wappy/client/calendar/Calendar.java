@@ -1,31 +1,31 @@
 package wappy.client.calendar;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.widget.Dialog;
+import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.widget.Info;
+import com.extjs.gxt.ui.client.widget.MessageBox;
+import com.extjs.gxt.ui.client.widget.button.Button;
 import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
-import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
-import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.pathf.gwt.util.json.client.JSONWrapper;
 
-public class Calendar extends Composite implements ClickHandler {
+public class Calendar extends Composite {
 	private VerticalPanel rootPanel = new VerticalPanel();
 	private HorizontalPanel calHeader = new HorizontalPanel();
 	private HorizontalPanel headerInfoPanel = new HorizontalPanel();
@@ -33,39 +33,44 @@ public class Calendar extends Composite implements ClickHandler {
 	
 	private FlexTable mainContent = new FlexTable();
 	
-	private Button confirmButton = new Button("Confirm");
-	private Button addButton = new Button("Add");
-	private Button addButton2 = new Button("Add2");
-	private Button nextWeekButton = new Button("Next week");
-	private Button previousWeekButton = new Button("Previous week");
-	
 	private BookingForm bookingForm;
-	private BookingForm2 bookingForm2;
+	private CalendarView calView = new CalendarView();;
+	private List<Appointment> appointments = new ArrayList<Appointment>();
 	
-	private CalendarView calView = new CalendarView();
-	private ArrayList<Appointment> appointments = new ArrayList<Appointment>();
+	private Button addButton  = new Button("Add", new SelectionListener<ButtonEvent>() {
+		public void componentSelected(ButtonEvent ce) {
+			openBookingForm();
+		}
+	});
+
+//	private Button refreshButton = new Button("Refresh", new SelectionListener<ButtonEvent>() {
+//		public void componentSelected(ButtonEvent ce) {
+//			calView.update(appointments);
+//		}
+//	});
+	
+	private Command onAppointmentCreated = new Command() {
+		@Override
+		public void execute() {
+			appointments.add(bookingForm.getAppointment());
+			calView.update(bookingForm.getAppointment());
+		}
+		
+	};
 	
 	public Calendar() {
-		addButton.addClickHandler(this);
-		addButton2.addClickHandler(this);
-		nextWeekButton.addClickHandler(this);
-		previousWeekButton.addClickHandler(this);
-		confirmButton.addClickHandler(this);
+		appointments = getCurrentCalendar();
 		
 		headerInfoPanel.add(new HTML("This is the Calendar header"));
 		
 		headerCtrlPanel.add(addButton);
-		headerCtrlPanel.add(addButton2);
-		
-//		headerCtrlPanel.add(previousWeekButton);
-//		headerCtrlPanel.add(nextWeekButton);
 		
 		calHeader.setWidth("100%");
 		calHeader.addStyleName("wappy-calendar-header");
 		
 		calHeader.add(headerInfoPanel);
 		calHeader.add(headerCtrlPanel);
-		calHeader.setCellHorizontalAlignment(headerCtrlPanel, HorizontalPanel.ALIGN_RIGHT);
+//		calHeader.setCellHorizontalAlignment(headerCtrlPanel, HorizontalPanel.ALIGN_RIGHT);
 		
 		//calView.addStyleName("wappy-calendar-debugColor");
 		rootPanel.add(calHeader);
@@ -74,114 +79,64 @@ public class Calendar extends Composite implements ClickHandler {
 	}
 
 
-	public void onClick(ClickEvent event) {
-		Object sender = event.getSource();
-		if (sender == addButton) {
-			openBookingForm();
-		}
-		else if (sender == addButton2) {
-			openBookingForm2();
-		}
-		else if (sender == confirmButton) {
-			validateBooking();
-		}
-	}
-	
-	private void validateBooking() {
-		bookingForm.validateInputAndConfirm();
-		if (bookingForm.newAppointmentCreated()) {
-			addAppointmentToCalendar(bookingForm.getCreatedAppointment());
-		}		
-	}
-
-//>>>>>>>>>>>>>>>>>> Serever Comuication >>>>>>>>>>>>>>>>>>>>>>>>>>>
-	
-	private void addAppointmentToCalendar(Appointment appointment) {
-		// TODO Maybe do a duplicate test first?
-		
-		// TODO Add the new Appointment to database
-		addAppointmentToDB(appointment);
-		// Update Calendar view
-		calView.update(appointment);
-	}
-
-	private void addAppointmentToDB(Appointment appointment) {
-		// TODO adds only to an ArrayList: appointments
-		appointments.add(appointment); // fakeDB
-		
-		// Packing data into JSON format to send to server
-		final JSONObject jsonArgs = new JSONObject();
-    	jsonArgs.put("subject", new JSONString(appointment.getSubject()));
-    	jsonArgs.put("description", new JSONString(appointment.getDescription()));
-    	jsonArgs.put("year", new JSONString(appointment.getYear()));
-    	jsonArgs.put("month", new JSONString(appointment.getMonth()));
-    	jsonArgs.put("day", new JSONString(appointment.getDay()));
-    	jsonArgs.put("week_day", new JSONString(appointment.getWeekDay()));
-    	
-    	jsonArgs.put("start_hour", new JSONString(appointment.getStartHour()));
-    	jsonArgs.put("start_min", new JSONString(appointment.getStartMin()));
-    	jsonArgs.put("end_hour", new JSONString(appointment.getEndHour()));
-    	jsonArgs.put("end_min", new JSONString(appointment.getEndMin()));
-//    	jsonArgs.put("property1", new JSONBoolean(appointment.isProperty1()));
-//    	jsonArgs.put("property2", new JSONBoolean(appointment.isProperty2()));
-//    	jsonArgs.put("property3", new JSONBoolean(appointment.isProperty3()));
-    	
-    	
-    	//String testStr = "{\"subject\":\"test\",\"description\":\"test\",\"day\":\"testday\"}";
-        
+	private List<Appointment> getCurrentCalendar() {
 		RequestBuilder builder =
             new RequestBuilder(RequestBuilder.POST, 
-                               "http://127.0.0.1:8000/wcalendar/add_appointment/");
+                               "http://127.0.0.1:8000/wcalendar/get_calendar/");
 
         try {
-        	Request request = builder.sendRequest(jsonArgs.toString(), new RequestCallback() {
+        	builder.sendRequest("", new RequestCallback() {
                 public void onError(Request request, Throwable exception) {
-                    Window.alert("Request Error");
+                    MessageBox.alert("Alert", "Request Error", null);
                 }
 
                 public void onResponseReceived(Request request, Response response) {
-                    if (response.getStatusCode() == 200) {
+                	if (response.getStatusCode() == 200) {
                         JSONValue jsonValue = JSONParser.parse(response.getText());
                         JSONObject jsonObject = jsonValue.isObject();
-
-                        Window.alert("DEBUG: " + jsonObject.get("result").isString().stringValue());
+                        if (jsonObject.get("error").isString().isNull() == null ) { // tillräcklig check, lr m null?
+                            Info.display("DEBUG: Success",
+                            		"Calendar contents have been retrieved!");
+                            JSONWrapper root = new JSONWrapper(
+                                    JSONParser.parse(response.getText()));
+                            JSONWrapper result = root.get("result");
+                            for (int i = 0; i < result.size(); i++) {
+                            	appointments.add(new Appointment(
+                            			result.get(i).get("subject").stringValue(),
+                            			result.get(i).get("description").stringValue(),
+                            			result.get(i).get("startTimeStamp").longValue(),
+                            			result.get(i).get("endTimeStamp").longValue()));
+                            }
+                            calView.update(appointments);
+                        }
+                        MessageBox.alert("Error",
+                        		jsonObject.get("error").isString().toString(), null);
                     }
                     else {
-                        Window.alert("Http Error =(" + "\n"
-                        		+ jsonArgs.toString());
+                    	MessageBox.alert("Alert", "Http Error =(", null);
                     }
                 }       
             });
         }
         catch (RequestException e) {
-            Window.alert("Http Error =(");
+        	MessageBox.alert("Alert", "Http Error =(", null);
         }
-	}
-
-	private void getFromDatabaseBySubject(String subject) {
+		return appointments;
+		// TODO Auto-generated method stub
 		
 	}
-//<<<<<<<<<<<<<<<<<< Serever Comuication <<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+	public void onClick(ClickEvent event) {
+		Object sender = event.getSource();
+		if (sender == addButton) {
+			openBookingForm();
+		}
+	}
+	
 
 	private void openBookingForm() {
-		bookingForm = new BookingForm(confirmButton);
-		bookingForm.showBookingForm();
-	}
-
-	private void openBookingForm2() {
-		bookingForm2 = new BookingForm2();
-
-//		final Dialog dialog = new Dialog();
-//		dialog.setWidth(350);
-//		dialog.setHeading("Add appointment dialog");
-//		dialog.setButtons(Dialog.YESNOCANCEL);
-//		dialog.setScrollMode(Scroll.AUTO);
-//		dialog.setHideOnButtonClick(true);
-//		
-//		dialog.add(bookingForm2);
-//		dialog.show();
-		
-		Info.display(null, "Add2 was pressed");
+		bookingForm = new BookingForm(onAppointmentCreated );
 	}
 
 }

@@ -1,203 +1,209 @@
-// TODO: Check isDateValid()
-
 package wappy.client.calendar;
 
 import java.util.Date;
 
+import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.widget.Info;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.MessageBox;
+import com.extjs.gxt.ui.client.widget.Window;
+import com.extjs.gxt.ui.client.widget.button.Button;
+import com.extjs.gxt.ui.client.widget.form.DateField;
+import com.extjs.gxt.ui.client.widget.form.FormPanel;
+import com.extjs.gxt.ui.client.widget.form.TextArea;
+import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.form.TimeField;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.datepicker.client.DateBox;
+import com.google.gwt.json.client.JSONNumber;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.json.client.JSONString;
+import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DeferredCommand;
 
-public class BookingForm extends DialogBox{
-	
-	private VerticalPanel popupContent = new VerticalPanel();
-	private HorizontalPanel timePanel = new HorizontalPanel();
-	private HorizontalPanel headerPanel = new HorizontalPanel();
-	private HorizontalPanel buttonsPanel = new HorizontalPanel();
-	private HorizontalPanel subjectPanel = new HorizontalPanel();
-	private HorizontalPanel datePanel = new HorizontalPanel();
-	private VerticalPanel propertyPanel = new VerticalPanel();
-	
-	private	CheckBox property1 = new CheckBox("Property 1");
-	private	CheckBox property2 = new CheckBox("Property 2");
-	private	CheckBox property3 = new CheckBox("Property 3");
-	
-	private TimeListBox startTimeInput = new TimeListBox();
-	private TimeListBox endTimeInput = new TimeListBox();
-
-	private DateBox dateBox = new DateBox();
-	private TextBox subjectInput = new TextBox();
-	private TextArea descriptionInput = new TextArea();
-	
-	private Button cancelButton = new Button("Cancel");
-	
-	private boolean doneWithBooking = false;
-	private boolean newAppointmentCreated = false;
-	
+public class BookingForm extends LayoutContainer {
+	final Window w = new Window();
+	Command onAppointmentCreated;
+	private long startTimeStamp, endTimeStamp;
 	private Appointment appointment;
-	private Date now;
 	
-	public BookingForm(Button confirmButton) {
-		now = new Date();
-		doneWithBooking = false;
-		setText("Add new appointment to the calendar");
-		
-		timePanel.add(new HTML("Start"));
-		timePanel.add(startTimeInput);
-		timePanel.add(new HTML("Finish"));
-		timePanel.add(endTimeInput);
+	public BookingForm(Command onAppointmentCreated) {
+		this.onAppointmentCreated = onAppointmentCreated;
+		setLayout(new FlowLayout());
 		
 		
-		subjectPanel.add(new HTML("Subject"));
-		subjectPanel.add(subjectInput);
-		property1.setValue(true);
+		w.setPlain(false);
+		w.setWidth(350);
+		w.setHeading("Add new appointment");
+		w.setResizable(false);
+		w.setModal(true);
+		w.setAutoHeight(true);
+		w.setBlinkModal(true);
 		
-		propertyPanel.add(property1);
-		propertyPanel.add(property2);
-		propertyPanel.add(property3);
+		final FormPanel formPanel = new FormPanel();
+		formPanel.setHeaderVisible(false);
+		//formPanel.setWidth(500);	// DEBUG
 		
-		datePanel.add(new HTML("Date"));
-		datePanel.add(dateBox);
-		dateBox.setFormat(new DateBox.DefaultFormat(
-				DateTimeFormat.getFullDateFormat()));
-		//dateBox.getDatePicker();
+		final DateField dateField = new DateField();
+		dateField.setFieldLabel("Date");
+		dateField.setAllowBlank(false);
+		dateField.setMinValue(new Date()); // Don't allow to book in the past
+		dateField.getPropertyEditor().setFormat(DateTimeFormat.getFormat("yyyy-MM-dd"));
+		formPanel.add(dateField);
+				
+		final TimeField startTimeField = new TimeField();
+		startTimeField.setFieldLabel("Start");
+		startTimeField.setToolTip("Enter a start time");
+		startTimeField.setAllowBlank(false);
+		startTimeField.setFormat(DateTimeFormat.getFormat("HH:mm"));
+		formPanel.add(startTimeField);
 		
-//		headerPanel.add(datePicker);
-		headerPanel.add(propertyPanel);
 		
-		buttonsPanel.add(confirmButton);
-		buttonsPanel.add(cancelButton);
+		final TimeField endTimeField = new TimeField();
+		endTimeField.setFieldLabel("End");
+		endTimeField.setToolTip("Enter an end time");
+		endTimeField.setAllowBlank(false);
+		endTimeField.setFormat(DateTimeFormat.getFormat("HH:mm"));
+		formPanel.add(endTimeField);
 		
-		TimeField timeField = new TimeField();
-		popupContent.add(timeField);
+		final TextField<String> subjectField = new TextField<String>();
+		subjectField.setFieldLabel("Subject");
+		subjectField.setToolTip("Enter a subject");
+		subjectField.setEmptyText("Enter a subject");
+		subjectField.setAllowBlank(false);
+		formPanel.add(subjectField);
+	
+		final TextArea descriptionField = new TextArea();
+		descriptionField.setAllowBlank(true);
+		descriptionField.setFieldLabel("Description");
+		descriptionField.setToolTip("Description is optional");
+		descriptionField.setEmptyText("Optional: Enter a description, " +
+				"or leave it as it is for empty.");
 		
-		popupContent.add(timePanel);
-		popupContent.add(datePanel);
-		popupContent.add(headerPanel);
-		popupContent.add(subjectPanel);
-		popupContent.add(descriptionInput);
-		popupContent.add(buttonsPanel);
-		setWidget(popupContent);
+		descriptionField.setPreventScrollbars(true);
+		descriptionField.setAutoValidate(true);
+		descriptionField.setMaxLength(100);
+		descriptionField.setValidationDelay(300);
+		formPanel.add(descriptionField);
+
+		formPanel.setButtonAlign(HorizontalAlignment.CENTER);
 		
-		cancelButton.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				closeBookingForm();
+		formPanel.addButton(new Button("Submit", new SelectionListener<ButtonEvent>(){
+			public void componentSelected(ButtonEvent ce) {
+				
+				if (formPanel.isValid(false)) {
+					Date startDateTime = startTimeField.getDateValue();
+					Date endDateTime = endTimeField.getDateValue();
+					if (endDateTime.after(startDateTime)) {
+						Date date = dateField.getValue();
+						startTimeStamp = WappyTime.getTimeStamp(date, startDateTime);
+						endTimeStamp = WappyTime.getTimeStamp(date, endDateTime);
+						// fortsätt med resten av bokningen
+						String subject = subjectField.getValue();
+						String descr = descriptionField.getValue();
+						appointment = new Appointment(subject, descr,
+								startTimeStamp, endTimeStamp);
+						saveAppointment(appointment);
+					}
+					else {
+						//ajajaj
+						MessageBox.alert("Alert", "End time must be after start time!", null);
+						Info.display("Invalid time selection", "End time must be after start time!");
+					}
+					
+				}
+				
+				
 			}
-		});
+			}));
 		
-		// Add styles
-		//addStyleName("wappy-calendar-bookingForm");
-		//dateBox.getDatePicker().addStyleName("wappy-calendar-bookingForm-picker");
-	}
-
-	private boolean isSubjectValid() {
-		return !subjectInput.getText().isEmpty();
-	}
-	
-	private boolean isDateValid() {
-		// TODO Validate date
-		Date date = dateBox.getValue();
-		if (date != null && date.after(now))
-			return true;
-		else if (date.equals(now)) {
-			Window.alert("Equal date!");
-			return false;
-		}
-		else
-			return false;
-	}
-	
-	private void createNewAppointment() {
-		// Create Appointment from inputed data
-		// TODO Look at DateTimeFormat
-
-		//		Date date = dateBox.getValue();
-		String startTime = startTimeInput.getValue((startTimeInput.getSelectedIndex()));
-		String endTime = endTimeInput.getValue((endTimeInput.getSelectedIndex()));
-
-//		int startHour = Integer.parseInt(startTime.split(":")[0]);
-//		int startMin = Integer.parseInt(startTime.split(":")[1]);
-//		int endHour = Integer.parseInt(endTime.split(":")[0]);
-//		int endMin = Integer.parseInt(endTime.split(":")[1]);
-//		int year = WappyDateTime.getYearNr(date);
-//		int month = WappyDateTime.getMonthNr(date);
-//		int dayNr =  WappyDateTime.getDayNr(date);
-//		
-//		GregorianCalendar startCal = new GregorianCalendar(year, month, dayNr, startHour, startMin, 0);
-//		GregorianCalendar endCal = 	new GregorianCalendar(year, month, dayNr, endHour, endMin, 0);
-//		Date startDate = startCal.getTime();
-//		Date endDate = endCal.getTime();
-		
-		appointment = new Appointment(subjectInput.getText(), descriptionInput.getText(),
-				dateBox.getValue(), startTime, endTime);
-		newAppointmentCreated = true;
-	
-//		Window.alert("subject: " + subjectInput.getText() + "\ndesc: " +
-//				descriptionInput.getText() + "\nStartTime: " + startTime +
-//				"\nEndTime: " + endTime);
-	}
-	
-	protected void closeBookingForm() {
-		doneWithBooking = true;
-		hide();
-	}
-	
-	protected void validateInputAndConfirm() {
-		if (isSubjectValid() &&
-				isDateValid()) {
-			closeBookingForm();
-			createNewAppointment();
+		formPanel.addButton(new Button("Cancel", new SelectionListener<ButtonEvent>() {
+			public void componentSelected(ButtonEvent ce) {
+				w.hide();
+				
+			}
 			
-		}
-		else {
-			// TODO Mark wrong input fields
-			Window.alert("Required fields are incomplete!");
-		}
-	}
+		}));
 
-	public boolean containsValidData() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public void showBookingForm() {
-		newAppointmentCreated = false;
+		w.add(formPanel);
+		add(w);
+		w.show();
 		
-		setPopupPositionAndShow(new PopupPanel.PositionCallback() {
-			public void setPosition(int offsetWidth, int offsetHeight) {
-				int left = (Window.getClientWidth() - offsetWidth) / 3;
-				int top = (Window.getClientHeight() - offsetHeight) / 3;
-				setPopupPosition(left, top);
-			}
-			});
+		DeferredCommand.addCommand(new Command() {
+            public void execute() {
+            	w.toFront();
+             }
+        });
 		
-	}
-
-
-	public boolean bookingDone() {
-		return doneWithBooking;
-	}
-
-	public boolean newAppointmentCreated() {
-		return newAppointmentCreated ;
+		dateField.setValue(new Date());
+		
+		
 	}
 	
-	public Appointment getCreatedAppointment() {
-		return appointment;
+	private void saveAppointment(final Appointment appointment) {
+		final JSONObject jsonArgs = new JSONObject();
+    	jsonArgs.put("subject", new JSONString(appointment.getSubject()));
+    	
+    	// TODO: Possible bug with empty descr
+//    	jsonArgs.put("description", new JSONString(appointment.getDescription()));
+    	String descr = appointment.getDescription();
+    	if (descr == null) {
+    		jsonArgs.put("description", new JSONString(""));
+    	}
+    	else {
+    		jsonArgs.put("description", new JSONString("DEBUG"));
+    	}
+    	
+    	// Note: JSONNumber is a double
+    	jsonArgs.put("startTimeStamp", new JSONNumber(appointment.getStartTimeStamp()));
+    	jsonArgs.put("endTimeStamp", new JSONNumber(appointment.getEndTimeStamp()));
+    	
+    	RequestBuilder builder =
+            new RequestBuilder(RequestBuilder.POST, 
+                               "http://127.0.0.1:8000/wcalendar/add_appointment/");
+
+        try {
+        	builder.sendRequest(jsonArgs.toString(), new RequestCallback() {
+                public void onError(Request request, Throwable exception) {
+                    MessageBox.alert("Alert", "Request Error", null);
+                }
+
+                public void onResponseReceived(Request request, Response response) {
+                    if (response.getStatusCode() == 200) {
+                        JSONValue jsonValue = JSONParser.parse(response.getText());
+                        JSONObject jsonObject = jsonValue.isObject();
+                        if (jsonObject.get("error").isString().isNull() == null ) { // tillräcklig check, lr m null?
+                            // Success!
+                            Info.display("", "New appointment was added to the calendar!");
+                            w.hide();
+                            DeferredCommand.addCommand(onAppointmentCreated);
+                        }
+                        MessageBox.alert("Alert", "DEBUG: " + 
+                        		jsonObject.get("result").isString().stringValue(), null);
+                    }
+                    else {
+                    	MessageBox.alert("Alert", "Http Error =(" + "\n"
+                        		+ jsonArgs.toString(), null);
+                    }
+                }       
+            });
+        }
+        catch (RequestException e) {
+        	MessageBox.alert("Alert", "Http Error =(", null);
+        }
+		
 	}
 
-
-
+	public Appointment getAppointment() {
+		return this.appointment;
+	}
 }

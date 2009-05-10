@@ -2,128 +2,81 @@ package wappy.client.calendar;
 
 import java.util.Date;
 
+import com.extjs.gxt.ui.client.data.BaseModel;
+
+
 
 /**
  * Implementation of an Appointment object.
  */
-public class Appointment {
-	private String subject;
-	private String description;
-//	private Date date;
-	private String year;
-	private String month;
-	private String day;
-	private String weekDay;
 
-//	private String startTime;
-//	private String endTime;	
-	private String startHour;
-	private String startMin;
-	private String endHour;
-	private String endMin;
-
-//	private boolean property1 = true;
-//	private boolean property2 = false;
-//	private boolean property3 = false;
-	
-	public Appointment(String subject, String description,
-			Date date, String startTime, String endTime) {
-		this.subject = subject;
-		this.description = description;
-
-//		this.date = date;
-		this.setYear(WappyDateTime.getYear(date));
-		this.setMonth(WappyDateTime.getMonth(date));
-		this.setDay(WappyDateTime.getDay(date));
-		this.setWeekDay(WappyDateTime.getWeekDay(date));
+public class Appointment extends BaseModel {
 		
-		this.setStartHour(startTime.split(":")[0]);
-		this.setStartMin(startTime.split(":")[1]);
-		this.setEndHour(endTime.split(":")[0]);
-		this.setEndMin(endTime.split(":")[1]);
+	public Appointment(String subject, String description,
+			long startTimeStamp, long endTimeStamp) {
+		set("subject", subject);
+		set("description", description);
+		set("startTimeStamp", startTimeStamp);
+		set("endTimeStamp", endTimeStamp);
+		// Rest of the properties is for view
+		set("date", getDateFromStamp());
+		set("month", getMonth());
+		set("weekDay", getWeekDay());
+		set("startTime", getStartTime());
+		set("endTime", getEndTime());
 	}
 
-	public void setSubject(String subject) {
-		this.subject = subject;
+
+	private Date getDateFromStamp() {
+		return WappyTime.getDateFromStamp((Long)get("startTimeStamp"));
+	}
+
+
+	private String getMonth() {
+		return WappyTime.getMonth((Long)get("startTimeStamp"));
+	}
+
+
+	public int getWeekNr() {
+		return WappyTime.getWeekNr((Long)get("startTimeStamp"));
 	}
 
 
 	public String getSubject() {
-		return subject;
+		return get("subject");
 	}
-
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
 
 	public String getDescription() {
-		return description;
+		return get("description");
 	}
 
-	public void setYear(String year) {
-		this.year = year;
+	public long getStartTimeStamp() {
+		return (Long)get("startTimeStamp");
 	}
 
-	public String getYear() {
-		return year;
+	public long getEndTimeStamp() {
+		return (Long)get("endTimeStamp");
 	}
 
-	public void setMonth(String month) {
-		this.month = month;
-	}
-
-	public String getMonth() {
-		return month;
-	}
-
-	public void setDay(String day) {
-		this.day = day;
-	}
-
-	public String getDay() {
-		return day;
-	}
-
-	public void setWeekDay(String weekDay) {
-		this.weekDay = weekDay;
-	}
 
 	public String getWeekDay() {
-		return weekDay;
+		return WappyTime.getWeekDay(getStartTimeStamp());
 	}
 
-	public void setStartHour(String startHour) {
-		this.startHour = startHour;
+
+	public String getDateReadable() {
+		return WappyTime.getDateReadable(getStartTimeStamp());
 	}
 
-	public String getStartHour() {
-		return startHour;
+
+	public String getStartTime() {
+		return WappyTime.getTime(getStartTimeStamp());
 	}
 
-	public void setStartMin(String startMin) {
-		this.startMin = startMin;
+
+	public String getEndTime() {
+		return WappyTime.getTime(getEndTimeStamp());
 	}
 
-	public String getStartMin() {
-		return startMin;
-	}
-
-	public void setEndHour(String endHour) {
-		this.endHour = endHour;
-	}
-
-	public String getEndHour() {
-		return endHour;
-	}
-
-	public void setEndMin(String endMin) {
-		this.endMin = endMin;
-	}
-
-	public String getEndMin() {
-		return endMin;
-	}
-
+	
 }

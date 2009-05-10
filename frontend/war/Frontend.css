@@ -15,23 +15,4 @@
 }
 
 /** Calendar style rules. */
-
-.wappy-calendar-header {
-    background: #92C1F0;
-}
-
-.wappy-calendar-mainView {
-    background: #F6C818;
-}
-
-.wappy-calendar-debugColor {
-    background: #7C7C7E;
-}
-
-.wappy-calendar-bookingForm {
-    z-index: 9999;
-}
-
-.wappy-calendar-bookingForm-picker {
-    z-index: 9998;
-}
+@import "Calendar.css";

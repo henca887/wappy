@@ -1,6 +1,10 @@
 package wappy.client.calendar;
 
+import java.util.Calendar;
 import java.util.Date;
+
+import com.extjs.gxt.ui.client.util.DateWrapper;
+import com.extjs.gxt.ui.client.widget.form.TimeField;
 import com.google.gwt.i18n.client.DateTimeFormat;
 
 /*
@@ -21,7 +25,11 @@ import com.google.gwt.i18n.client.DateTimeFormat;
  12:00:00 AM 
  12:00 AM 
  */
-public class WappyDateTime {
+public class WappyTime {
+	
+	public boolean afterToday(Date date) {
+		return date.after(new Date());
+	}
 //	String getters
 	public static String getYear(Date date) {
 		String dateStr = DateTimeFormat.getLongDateFormat().format(date);
@@ -29,10 +37,16 @@ public class WappyDateTime {
 	}
 	
 	public static String getMonth(Date date) {
-		String dateStr = DateTimeFormat.getShortDateFormat().format(date);
-		return dateStr.split("/")[0];
+		return DateTimeFormat.getFormat("M").format(date);
+//		String dateStr = DateTimeFormat.getShortDateFormat().format(date);
+//		return dateStr.split("/")[0];
 	}
 	
+	public static String getMonth(long timeStamp) {
+		Date date = new Date();
+		date.setTime(timeStamp);
+		return getMonth(date);
+	}
 	public static String getDay(Date date) {
 		String dateStr = DateTimeFormat.getShortDateFormat().format(date);
 		return dateStr.split("/")[1];
@@ -87,6 +101,49 @@ public class WappyDateTime {
 	public static int getDayNr(Date date) {
 		String dateStr = DateTimeFormat.getShortDateFormat().format(date);
 		return Integer.parseInt(dateStr.split("/")[1]);
+	}
+//////////////////////////////////
+	public static long getTimeStamp(Date date, Date startDateTime) {
+		DateWrapper timeWrapper = new DateWrapper(startDateTime);
+		int hours = timeWrapper.getHours();
+		int mins = timeWrapper.getMinutes();
+		
+		DateWrapper dateWrapper = new DateWrapper(date);
+		dateWrapper = dateWrapper.clearTime();
+		dateWrapper = dateWrapper.addHours(hours);
+		dateWrapper = dateWrapper.addMinutes(mins);
+		
+		return dateWrapper.getTime();
+	}
+	
+	
+	public static String getWeekDay(long startTimeStamp) {
+		DateWrapper dateWrapper = new DateWrapper(startTimeStamp);
+		Date date = dateWrapper.asDate();
+		return getWeekDay(date);
+	}
+	
+	public static String getDateReadable(long startTimeStamp) {
+		DateWrapper dateWrapper = new DateWrapper(startTimeStamp);
+		Date date = dateWrapper.asDate();
+		return DateTimeFormat.getFormat("yyyy-MM-dd").format(date);
+	}
+	
+	public static String getTime(long timeStamp) {
+		DateWrapper dateWrapper = new DateWrapper(timeStamp);
+		Date date = dateWrapper.asDate();
+		return DateTimeFormat.getFormat("HH:mm").format(date);
+	}
+	
+	
+	public static int getWeekNr(long timeStamp) {
+		// TODO: Extract week nr, implement!
+		return 0;
+	}
+	public static Date getDateFromStamp(Long timeStamp) {
+		Date date = new Date();
+		date.setTime(timeStamp);
+		return date;
 	}
 	
 }

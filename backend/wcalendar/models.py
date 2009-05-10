@@ -1,24 +1,18 @@
-import datetime
 from django.db import models
+from django.contrib.auth.models import User
 
 class Calendar(models.Model):
-    user = models.CharField(max_length=20, default='DEBUG')
-    type = models.CharField(max_length=20, default='Standard')
+    user = models.ForeignKey(User, related_name='calendars')
+    type = models.CharField(max_length=20, default='Main')
     def __unicode__(self):
-        return self.user
+        return 'User: %s, Type: %s' % (self.user.username, self.type)
 
 class Appointment(models.Model):
-    calendar = models.ForeignKey(Calendar)
+    calendar = models.ForeignKey(Calendar, related_name='appointments')
     subject = models.CharField(max_length=30)
-    description = models.TextField(blank=True)
-    year = models.CharField(max_length=4)
-    month = models.CharField(max_length=2)
-    day = models.CharField(max_length=2)
-    week_day = models.CharField(max_length=10)
-    start_hour = models.CharField(max_length=2)
-    start_min = models.CharField(max_length=2)
-    end_hour = models.CharField(max_length=2)
-    end_min = models.CharField(max_length=2)
+    description = models.TextField(max_length=160, blank=True)
+    start_timestamp = models.IntegerField()
+    end_timestamp = models.IntegerField()
 ##    property1 = models.BooleanField(default=True)
 ##    property2 = models.BooleanField(default=False)
 ##    property3 = models.BooleanField(default=False)
