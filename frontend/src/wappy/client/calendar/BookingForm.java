@@ -3,6 +3,8 @@
 package wappy.client.calendar;
 
 import java.util.Date;
+
+import com.extjs.gxt.ui.client.widget.form.TimeField;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -57,6 +59,7 @@ public class BookingForm extends DialogBox{
 		timePanel.add(new HTML("Finish"));
 		timePanel.add(endTimeInput);
 		
+		
 		subjectPanel.add(new HTML("Subject"));
 		subjectPanel.add(subjectInput);
 		property1.setValue(true);
@@ -76,6 +79,9 @@ public class BookingForm extends DialogBox{
 		
 		buttonsPanel.add(confirmButton);
 		buttonsPanel.add(cancelButton);
+		
+		TimeField timeField = new TimeField();
+		popupContent.add(timeField);
 		
 		popupContent.add(timePanel);
 		popupContent.add(datePanel);
