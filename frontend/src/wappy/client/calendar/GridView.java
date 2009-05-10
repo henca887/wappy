@@ -30,7 +30,7 @@ public class GridView extends LayoutContainer {
 		  
 //	    GroupingStore<Appointment> store = new GroupingStore<Appointment>();  
 //	    store.add(appointments);  
-//	    store.groupBy("month");  
+	    store.groupBy("month");  
 	  
 	    ColumnConfig date = new ColumnConfig("date", "Date", 80);  
 	    ColumnConfig weekDay = new ColumnConfig("weekDay", "Day", 80);  
@@ -79,29 +79,20 @@ public class GridView extends LayoutContainer {
 
 
 	public void update(Appointment appointment) {
-		
-		
+		store.add(appointment);
 	}
 
 	public void update(List<Appointment> appointments) {
-		  
-	    store.add(appointments);  
-	    store.groupBy("month");
+		updateMethod1(appointments);
 
-	 // HMMMM? vad händer nedan va?
-//	    grid = new Grid<Appointment>(store, cm); 
-//	    GroupingView view = new GroupingView();  
-//	    view.setForceFit(true);  
-//	    view.setGroupRenderer(new GridGroupRenderer() {  
-//	      public String render(GroupColumnData data) {  
-//	        String f = cm.getColumnById(data.field).getHeader();  
-//	        String l = data.models.size() == 1 ? "Item" : "Items";  
-//	        return f + ": " + data.group + " (" + data.models.size() + " " + l + ")";  
-//	      }  
-//	    });  
-//	  
-//	    grid = new Grid<Appointment>(store, cm);  
-//	    grid.setView(view);  
-//	    grid.setBorders(true);
 	}
+
+	// This "works", at least first time.
+	// With //grid.setView(view); in constructor  
+	private void updateMethod1(List<Appointment> appointments) {
+		store.add(appointments);   
+//	    store.groupBy("month");
+	}
+	
+	
 }
