@@ -3,11 +3,9 @@ package wappy.client.calendar;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.store.GroupingStore;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.form.Field.FieldMessages;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
@@ -27,21 +25,24 @@ public class GridView extends LayoutContainer {
 	
 	public GridView() {
 		setLayout(new FlowLayout(10));  
-		  
 //	    GroupingStore<Appointment> store = new GroupingStore<Appointment>();  
 //	    store.add(appointments);  
-	    store.groupBy("month");  
-	  
+		
+		store.groupBy("month");
+//		store.groupBy("date");  
+		
 	    ColumnConfig date = new ColumnConfig("date", "Date", 80);  
-	    ColumnConfig weekDay = new ColumnConfig("weekDay", "Day", 80);  
+		ColumnConfig month = new ColumnConfig("month", "Month", 1);
+		ColumnConfig weekDay = new ColumnConfig("weekDay", "Day", 80);  
 	    ColumnConfig startTime = new ColumnConfig("startTime", "Start", 80);  
 	    ColumnConfig endTime = new ColumnConfig("endTime", "End", 80);  
 	    ColumnConfig subject = new ColumnConfig("subject", "Appointment", 80);
 	    ColumnConfig description = new ColumnConfig("description", "Description", 200);
 	    date.setDateTimeFormat(DateTimeFormat.getFormat("yyyy-MM-dd"));  
-	  
-	      
-	    config.add(date);  
+	    month.setHidden(true); 
+	     
+	    config.add(date);
+	    config.add(month);
 	    config.add(weekDay);  
 	    config.add(startTime);  
 	    config.add(endTime);  
@@ -62,7 +63,7 @@ public class GridView extends LayoutContainer {
 	    });  
 	  
 	    grid = new Grid<Appointment>(store, cm);  
-//	    grid.setView(view);  
+	    grid.setView(view);  
 	    grid.setBorders(true);  
 	  
 	      
@@ -87,11 +88,8 @@ public class GridView extends LayoutContainer {
 
 	}
 
-	// This "works", at least first time.
-	// With //grid.setView(view); in constructor  
 	private void updateMethod1(List<Appointment> appointments) {
 		store.add(appointments);   
-//	    store.groupBy("month");
 	}
 	
 	

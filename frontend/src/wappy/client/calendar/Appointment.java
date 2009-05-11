@@ -32,7 +32,7 @@ public class Appointment extends BaseModel {
 	}
 
 
-	private String getMonth() {
+	public String getMonth() {
 		return WappyTime.getMonth((Long)get("startTimeStamp"));
 	}
 

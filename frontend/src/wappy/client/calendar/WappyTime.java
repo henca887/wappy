@@ -37,7 +37,7 @@ public class WappyTime {
 	}
 	
 	public static String getMonth(Date date) {
-		return DateTimeFormat.getFormat("M").format(date);
+		return DateTimeFormat.getFormat("MMMM").format(date);
 //		String dateStr = DateTimeFormat.getShortDateFormat().format(date);
 //		return dateStr.split("/")[0];
 	}

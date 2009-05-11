@@ -187,8 +187,10 @@ public class BookingForm extends LayoutContainer {
                             w.hide();
                             DeferredCommand.addCommand(onAppointmentCreated);
                         }
-                        MessageBox.alert("Alert", "DEBUG: " + 
-                        		jsonObject.get("result").isString().stringValue(), null);
+                        else {
+	                        MessageBox.alert("Alert", "DEBUG: " + 
+	                        		jsonObject.get("error").isString().stringValue(), null);
+                        }
                     }
                     else {
                     	MessageBox.alert("Alert", "Http Error =(" + "\n"
