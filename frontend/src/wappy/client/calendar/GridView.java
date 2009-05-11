@@ -25,14 +25,14 @@ public class GridView extends LayoutContainer {
 	
 	public GridView() {
 		setLayout(new FlowLayout(10));  
-//	    GroupingStore<Appointment> store = new GroupingStore<Appointment>();  
-//	    store.add(appointments);  
-		
-		store.groupBy("month");
-//		store.groupBy("date");  
+
+//		store.groupBy("month");
+//		store.groupBy("date"); 
+		store.groupBy("weekNr");
 		
 	    ColumnConfig date = new ColumnConfig("date", "Date", 80);  
 		ColumnConfig month = new ColumnConfig("month", "Month", 1);
+		ColumnConfig weekNr = new ColumnConfig("weekNr", "Week", 1);
 		ColumnConfig weekDay = new ColumnConfig("weekDay", "Day", 80);  
 	    ColumnConfig startTime = new ColumnConfig("startTime", "Start", 80);  
 	    ColumnConfig endTime = new ColumnConfig("endTime", "End", 80);  
@@ -40,9 +40,11 @@ public class GridView extends LayoutContainer {
 	    ColumnConfig description = new ColumnConfig("description", "Description", 200);
 	    date.setDateTimeFormat(DateTimeFormat.getFormat("yyyy-MM-dd"));  
 	    month.setHidden(true); 
-	     
+	    weekNr.setHidden(true);
+	    
 	    config.add(date);
 	    config.add(month);
+	    config.add(weekNr);
 	    config.add(weekDay);  
 	    config.add(startTime);  
 	    config.add(endTime);  
@@ -65,13 +67,12 @@ public class GridView extends LayoutContainer {
 	    grid = new Grid<Appointment>(store, cm);  
 	    grid.setView(view);  
 	    grid.setBorders(true);  
-	  
-	      
+	    
 	    panel.setHeading("Calendar Grid View");  
 	    panel.setIconStyle("icon-table");  
 	    panel.setCollapsible(true);
-	    //panel.setFrame(true);  
-	    panel.setSize(700, 450);  
+	    panel.setFrame(true);  
+	    panel.setSize(760, 520);  
 	    panel.setLayout(new FitLayout());  
 	    panel.add(grid);  
 	  

@@ -1,10 +1,7 @@
 package wappy.client.calendar;
 
-import java.util.Calendar;
 import java.util.Date;
-
 import com.extjs.gxt.ui.client.util.DateWrapper;
-import com.extjs.gxt.ui.client.widget.form.TimeField;
 import com.google.gwt.i18n.client.DateTimeFormat;
 
 /*
@@ -25,6 +22,9 @@ import com.google.gwt.i18n.client.DateTimeFormat;
  12:00:00 AM 
  12:00 AM 
  */
+
+// TODO: Not able to extract week nr from date, 
+// done on server for now
 public class WappyTime {
 	
 	public boolean afterToday(Date date) {
@@ -32,44 +32,33 @@ public class WappyTime {
 	}
 //	String getters
 	public static String getYear(Date date) {
-		String dateStr = DateTimeFormat.getLongDateFormat().format(date);
-		return dateStr.split(",")[1].trim();
+		return DateTimeFormat.getFormat("yyyy").format(date);
 	}
 	
-	public static String getMonth(Date date) {
-		return DateTimeFormat.getFormat("MMMM").format(date);
-//		String dateStr = DateTimeFormat.getShortDateFormat().format(date);
-//		return dateStr.split("/")[0];
-	}
-	
-	public static String getMonth(long timeStamp) {
+	public static String getMonthName(long timeStamp) {
 		Date date = new Date();
 		date.setTime(timeStamp);
-		return getMonth(date);
-	}
-	public static String getDay(Date date) {
-		String dateStr = DateTimeFormat.getShortDateFormat().format(date);
-		return dateStr.split("/")[1];
+		return getMonthName(date);
 	}
 	
 	public static String getMonthName(Date date) {
-		String dateStr = DateTimeFormat.getLongDateFormat().format(date);
-		return dateStr.split(",")[0].split(" ")[0];
+		return DateTimeFormat.getFormat("MMMM").format(date);
+	}
+	
+	public static String getDay(Date date) {
+		return DateTimeFormat.getFormat("dd").format(date);
 	}
 	
 	public static String getWeekDay(Date date) {
-		String dateStr = DateTimeFormat.getFullDateFormat().format(date);
-		return dateStr.split(",")[0].trim();
+		return DateTimeFormat.getFormat("EEEE").format(date);
 	}
 	
 	public static String getHour(Date date) {
-		String dateStr = DateTimeFormat.getMediumTimeFormat().format(date);
-		return dateStr.split(":")[0];
+		return DateTimeFormat.getFormat("HH").format(date);
 	}
 	
 	public static String getMin(Date date) {
-		String dateStr = DateTimeFormat.getMediumTimeFormat().format(date);
-		return dateStr.split(":")[1];
+		return DateTimeFormat.getFormat("mm").format(date);
 	}
 	
 //	Integer getters

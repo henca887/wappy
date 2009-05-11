@@ -14,12 +14,9 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
-import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
-import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -31,8 +28,6 @@ public class Calendar extends Composite {
 	private HorizontalPanel headerInfoPanel = new HorizontalPanel();
 	private HorizontalPanel headerCtrlPanel = new HorizontalPanel();
 	
-	private FlexTable mainContent = new FlexTable();
-	
 	private BookingForm bookingForm;
 	private CalendarView calView = new CalendarView();;
 	private List<Appointment> appointments = new ArrayList<Appointment>();
@@ -42,12 +37,6 @@ public class Calendar extends Composite {
 			openBookingForm();
 		}
 	});
-
-//	private Button refreshButton = new Button("Refresh", new SelectionListener<ButtonEvent>() {
-//		public void componentSelected(ButtonEvent ce) {
-//			calView.update(appointments);
-//		}
-//	});
 	
 	private Command onAppointmentCreated = new Command() {
 		@Override
@@ -70,7 +59,7 @@ public class Calendar extends Composite {
 		
 		calHeader.add(headerInfoPanel);
 		calHeader.add(headerCtrlPanel);
-//		calHeader.setCellHorizontalAlignment(headerCtrlPanel, HorizontalPanel.ALIGN_RIGHT);
+		//calHeader.setCellHorizontalAlignment(headerCtrlPanel, HorizontalPanel.ALIGN_RIGHT);
 		
 		//calView.addStyleName("wappy-calendar-debugColor");
 		rootPanel.add(calHeader);
@@ -92,25 +81,28 @@ public class Calendar extends Composite {
 
                 public void onResponseReceived(Request request, Response response) {
                 	if (response.getStatusCode() == 200) {
-                        JSONValue jsonValue = JSONParser.parse(response.getText());
-                        JSONObject jsonObject = jsonValue.isObject();
-                        if (jsonObject.get("error").isString().isNull() == null ) { // tillräcklig check, lr m null?
-                            Info.display("DEBUG: Success",
+                		JSONWrapper root = new JSONWrapper(
+                                JSONParser.parse(response.getText()));
+                        JSONWrapper result = root.get("result");
+                        JSONWrapper error = root.get("error");
+                        
+                		if (error.isNull()) { // properly checked?
+                			Info.display("DEBUG: Success",
                             		"Calendar contents have been retrieved!");
-                            JSONWrapper root = new JSONWrapper(
-                                    JSONParser.parse(response.getText()));
-                            JSONWrapper result = root.get("result");
                             for (int i = 0; i < result.size(); i++) {
                             	appointments.add(new Appointment(
                             			result.get(i).get("subject").stringValue(),
                             			result.get(i).get("description").stringValue(),
                             			result.get(i).get("startTimeStamp").longValue(),
-                            			result.get(i).get("endTimeStamp").longValue()));
+                            			result.get(i).get("endTimeStamp").longValue(),
+                            			result.get(i).get("weekNr").longValue())); // No intValue???!
                             }
                             calView.update(appointments);
                         }
-                        MessageBox.alert("Error",
-                        		jsonObject.get("error").isString().toString(), null);
+                		else {
+	                        MessageBox.alert("Error",
+	                        		error.getValue().toString(), null);
+                		}
                     }
                     else {
                     	MessageBox.alert("Alert", "Http Error =(", null);
@@ -119,11 +111,9 @@ public class Calendar extends Composite {
             });
         }
         catch (RequestException e) {
-        	MessageBox.alert("Alert", "Http Error =(", null);
+        	MessageBox.alert("Alert", "Http Error =(, Exception", null);
         }
 		return appointments;
-		// TODO Auto-generated method stub
-		
 	}
 
 
@@ -134,7 +124,6 @@ public class Calendar extends Composite {
 		}
 	}
 	
-
 	private void openBookingForm() {
 		bookingForm = new BookingForm(onAppointmentCreated );
 	}

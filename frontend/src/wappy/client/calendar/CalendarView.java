@@ -2,8 +2,6 @@ package wappy.client.calendar;
 
 import java.util.List;
 
-
-import com.extjs.gxt.ui.client.widget.Info;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.VerticalPanel;
 

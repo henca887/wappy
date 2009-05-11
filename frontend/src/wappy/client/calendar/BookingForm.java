@@ -26,9 +26,9 @@ import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
-import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
+import com.pathf.gwt.util.json.client.JSONWrapper;
 
 public class BookingForm extends LayoutContainer {
 	final Window w = new Window();
@@ -36,7 +36,7 @@ public class BookingForm extends LayoutContainer {
 	private long startTimeStamp, endTimeStamp;
 	private Appointment appointment;
 	
-	public BookingForm(Command onAppointmentCreated) {
+	public BookingForm(final Command onAppointmentCreated) {
 		this.onAppointmentCreated = onAppointmentCreated;
 		setLayout(new FlowLayout());
 		
@@ -51,13 +51,13 @@ public class BookingForm extends LayoutContainer {
 		
 		final FormPanel formPanel = new FormPanel();
 		formPanel.setHeaderVisible(false);
-		//formPanel.setWidth(500);	// DEBUG
 		
 		final DateField dateField = new DateField();
 		dateField.setFieldLabel("Date");
 		dateField.setAllowBlank(false);
 		dateField.setMinValue(new Date()); // Don't allow to book in the past
 		dateField.getPropertyEditor().setFormat(DateTimeFormat.getFormat("yyyy-MM-dd"));
+		dateField.setValue(new Date());
 		formPanel.add(dateField);
 				
 		final TimeField startTimeField = new TimeField();
@@ -107,31 +107,27 @@ public class BookingForm extends LayoutContainer {
 						Date date = dateField.getValue();
 						startTimeStamp = WappyTime.getTimeStamp(date, startDateTime);
 						endTimeStamp = WappyTime.getTimeStamp(date, endDateTime);
-						// fortsätt med resten av bokningen
 						String subject = subjectField.getValue();
 						String descr = descriptionField.getValue();
+						
+						// DEBUG:SOLVED: better if weekNr could be generated on client
+						long weekNr = 0;
 						appointment = new Appointment(subject, descr,
-								startTimeStamp, endTimeStamp);
+								startTimeStamp, endTimeStamp, weekNr);
 						saveAppointment(appointment);
 					}
 					else {
-						//ajajaj
 						MessageBox.alert("Alert", "End time must be after start time!", null);
 						Info.display("Invalid time selection", "End time must be after start time!");
 					}
-					
 				}
-				
-				
 			}
-			}));
+		}));
 		
 		formPanel.addButton(new Button("Cancel", new SelectionListener<ButtonEvent>() {
 			public void componentSelected(ButtonEvent ce) {
 				w.hide();
-				
 			}
-			
 		}));
 
 		w.add(formPanel);
@@ -143,24 +139,18 @@ public class BookingForm extends LayoutContainer {
             	w.toFront();
              }
         });
-		
-		dateField.setValue(new Date());
-		
-		
 	}
 	
 	private void saveAppointment(final Appointment appointment) {
 		final JSONObject jsonArgs = new JSONObject();
     	jsonArgs.put("subject", new JSONString(appointment.getSubject()));
     	
-    	// TODO: Possible bug with empty descr
-//    	jsonArgs.put("description", new JSONString(appointment.getDescription()));
     	String descr = appointment.getDescription();
     	if (descr == null) {
     		jsonArgs.put("description", new JSONString(""));
     	}
     	else {
-    		jsonArgs.put("description", new JSONString("DEBUG"));
+    		jsonArgs.put("description", new JSONString(descr));
     	}
     	
     	// Note: JSONNumber is a double
@@ -179,17 +169,19 @@ public class BookingForm extends LayoutContainer {
 
                 public void onResponseReceived(Request request, Response response) {
                     if (response.getStatusCode() == 200) {
-                        JSONValue jsonValue = JSONParser.parse(response.getText());
-                        JSONObject jsonObject = jsonValue.isObject();
-                        if (jsonObject.get("error").isString().isNull() == null ) { // tillräcklig check, lr m null?
-                            // Success!
-                            Info.display("", "New appointment was added to the calendar!");
+                    	JSONWrapper root = new JSONWrapper(
+                                JSONParser.parse(response.getText()));
+                        JSONWrapper error = root.get("error");
+                        if (error.isNull()) { // properly checked?
+                            JSONWrapper weekNr = root.get("weekNr");
+                        	BookingForm.this.appointment.setWeekNr(weekNr.longValue());
+                        	Info.display("", "New appointment was added to the calendar!");
                             w.hide();
                             DeferredCommand.addCommand(onAppointmentCreated);
                         }
                         else {
 	                        MessageBox.alert("Alert", "DEBUG: " + 
-	                        		jsonObject.get("error").isString().stringValue(), null);
+	                        		error.toString(), null);
                         }
                     }
                     else {

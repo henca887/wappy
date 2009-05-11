@@ -11,29 +11,29 @@ import com.extjs.gxt.ui.client.data.BaseModel;
  */
 
 public class Appointment extends BaseModel {
-		
+	// long week because of JSONWrapper, see in Calendar class	
 	public Appointment(String subject, String description,
-			long startTimeStamp, long endTimeStamp) {
+			long startTimeStamp, long endTimeStamp, long weekNr) {
 		set("subject", subject);
 		set("description", description);
 		set("startTimeStamp", startTimeStamp);
 		set("endTimeStamp", endTimeStamp);
 		// Rest of the properties is for view
+		set("weekNr", weekNr);		// weekNr is calculated at server
 		set("date", getDateFromStamp());
 		set("month", getMonth());
 		set("weekDay", getWeekDay());
 		set("startTime", getStartTime());
 		set("endTime", getEndTime());
 	}
-
-
+	
 	private Date getDateFromStamp() {
 		return WappyTime.getDateFromStamp((Long)get("startTimeStamp"));
 	}
 
 
 	public String getMonth() {
-		return WappyTime.getMonth((Long)get("startTimeStamp"));
+		return WappyTime.getMonthName((Long)get("startTimeStamp"));
 	}
 
 
@@ -76,6 +76,10 @@ public class Appointment extends BaseModel {
 
 	public String getEndTime() {
 		return WappyTime.getTime(getEndTimeStamp());
+	}
+
+	public void setWeekNr(Long weekNr) {
+		set("weekNr", weekNr);
 	}
 
 	
