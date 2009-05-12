@@ -134,5 +134,10 @@ public class WappyTime {
 		date.setTime(timeStamp);
 		return date;
 	}
+	public static long getTimeStamp(String dateTimeStr) {
+		return DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").
+			parse(dateTimeStr).getTime();
+	}
+
 	
 }

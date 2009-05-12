@@ -70,7 +70,6 @@ public class GridView extends LayoutContainer {
 	    
 	    panel.setHeading("Calendar Grid View");  
 	    panel.setIconStyle("icon-table");  
-	    panel.setCollapsible(true);
 	    panel.setFrame(true);  
 	    panel.setSize(760, 520);  
 	    panel.setLayout(new FitLayout());  
