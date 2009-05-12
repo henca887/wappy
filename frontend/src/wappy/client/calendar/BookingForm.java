@@ -22,6 +22,7 @@ import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.json.client.JSONNull;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
@@ -118,7 +119,6 @@ public class BookingForm extends LayoutContainer {
 					}
 					else {
 						MessageBox.alert("Alert", "End time must be after start time!", null);
-						Info.display("Invalid time selection", "End time must be after start time!");
 					}
 				}
 			}
@@ -147,7 +147,7 @@ public class BookingForm extends LayoutContainer {
     	
     	String descr = appointment.getDescription();
     	if (descr == null) {
-    		jsonArgs.put("description", new JSONString(""));
+    		jsonArgs.put("description", new JSONString("")); // JSONNull instead?
     	}
     	else {
     		jsonArgs.put("description", new JSONString(descr));
@@ -164,7 +164,7 @@ public class BookingForm extends LayoutContainer {
         try {
         	builder.sendRequest(jsonArgs.toString(), new RequestCallback() {
                 public void onError(Request request, Throwable exception) {
-                    MessageBox.alert("Alert", "Request Error", null);
+                    MessageBox.alert("Alert:BookingForm", "Request Error", null);
                 }
 
                 public void onResponseReceived(Request request, Response response) {
@@ -180,19 +180,19 @@ public class BookingForm extends LayoutContainer {
                             DeferredCommand.addCommand(onAppointmentCreated);
                         }
                         else {
-	                        MessageBox.alert("Alert", "DEBUG: " + 
+	                        MessageBox.alert("Alert:BookingForm", "DEBUG: " + 
 	                        		error.toString(), null);
                         }
                     }
                     else {
-                    	MessageBox.alert("Alert", "Http Error =(" + "\n"
+                    	MessageBox.alert("Alert:BookingForm", "Http Error =(" + "\n"
                         		+ jsonArgs.toString(), null);
                     }
                 }       
             });
         }
         catch (RequestException e) {
-        	MessageBox.alert("Alert", "Http Error =(", null);
+        	MessageBox.alert("Alert:BookingForm", "Http Error =(", null);
         }
 		
 	}

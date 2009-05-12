@@ -3,9 +3,9 @@ from django.contrib.auth.models import User
 
 class Calendar(models.Model):
     user = models.ForeignKey(User, related_name='calendars')
-    type = models.CharField(max_length=20, default='Main')
+    name = models.CharField(max_length=20, default='Main')
     def __unicode__(self):
-        return 'User: %s, Type: %s' % (self.user.username, self.type)
+        return 'User: %s, Type: %s' % (self.user.username, self.name)
 
 class Appointment(models.Model):
     calendar = models.ForeignKey(Calendar, related_name='appointments')
@@ -14,5 +14,5 @@ class Appointment(models.Model):
     start_timestamp = models.IntegerField()
     end_timestamp = models.IntegerField()
     def __unicode__(self):
-        return '%d' % self.start_timestamp
+        return self.subject
     
