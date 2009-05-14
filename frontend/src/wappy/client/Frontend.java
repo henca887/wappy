@@ -1,28 +1,24 @@
 package wappy.client;
 
-import com.google.gwt.core.client.EntryPoint;
-
-import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.HorizontalPanel;
+import wappy.client.calendar.Calendar;
+import wappy.client.mail.MailClient;
 
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.TabItem;
-import com.extjs.gxt.ui.client.widget.TabPanel;
 import com.extjs.gxt.ui.client.widget.Window;
 import com.extjs.gxt.ui.client.widget.button.Button;
-import com.extjs.gxt.ui.client.widget.layout.FitData;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-
-import wappy.client.mail.MailClient;
-import wappy.client.calendar.Calendar;
+import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.RootPanel;
 
 public class Frontend implements EntryPoint {
     Window mailWindow = new Window();
     Window calendarWindow = new Window();
     HorizontalPanel toolBar = new HorizontalPanel();
-
+    
+    private Calendar calendar = new Calendar();
+    
     public void onModuleLoad() {
         mailWindow.setSize(800, 600);  
         mailWindow.setPlain(true);  
@@ -31,11 +27,14 @@ public class Frontend implements EntryPoint {
         mailWindow.add(new MailClient());
 
         calendarWindow.setSize(800, 600);  
+        if (calendar.isGridView()) { // could use setMonitorWindowResize
+        	calendarWindow.setResizable(false);
+        }
         calendarWindow.setPlain(true);  
         calendarWindow.setHeading("Calendar");  
         calendarWindow.setLayout(new FitLayout());  
-        calendarWindow.add(new Calendar());
-
+        calendarWindow.add(calendar);
+        
         Button mailButton = new Button("Mail");  
         mailButton.addSelectionListener(new SelectionListener<ButtonEvent>() {  
             @Override  
