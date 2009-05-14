@@ -19,3 +19,8 @@
 .wappy-calendar-bookingForm-picker {
     z-index: 9998;
 }
+
+/** Icons */
+.wcalendar-icon-add {
+  background: url(../images/gxt/icons/wait.gif) no-repeat !important;
+}

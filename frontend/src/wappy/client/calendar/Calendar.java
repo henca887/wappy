@@ -4,48 +4,42 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.Info;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
+import com.extjs.gxt.ui.client.widget.button.SplitButton;
+import com.extjs.gxt.ui.client.widget.button.ToolButton;
+import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
+import com.extjs.gxt.ui.client.widget.menu.Menu;
+import com.extjs.gxt.ui.client.widget.menu.MenuItem;
+import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.pathf.gwt.util.json.client.JSONWrapper;
 
-public class Calendar extends Composite {
-	private VerticalPanel rootPanel = new VerticalPanel();
-	private HorizontalPanel calHeader = new HorizontalPanel();
-	private HorizontalPanel headerInfoPanel = new HorizontalPanel();
-	private HorizontalPanel headerCtrlPanel = new HorizontalPanel();
-	
+public class Calendar extends LayoutContainer {
+
+	private static final String URL_GET_CAL = 
+		"http://127.0.0.1:8000/wcalendar/get_calendar/";
+	private ContentPanel rootPanel = new ContentPanel();
 	private BookingForm bookingForm;
-	private CalendarView calView = new CalendarView();;
+	private CalendarView calView = new CalendarView("grid");
+	
 	private List<Appointment> appointments = new ArrayList<Appointment>();
-	
-	private Button addButton  = new Button("Add", new SelectionListener<ButtonEvent>() {
-		public void componentSelected(ButtonEvent ce) {
-			openBookingForm();
-		}
-	});
-	
-	private Button addSampleButton  = new Button("Add sample data", new SelectionListener<ButtonEvent>() {
-		public void componentSelected(ButtonEvent ce) {
-			addSampleApps(samples);
-		}
-	});
-	
+		
 	private Command onAppointmentCreated = new Command() {
 		@Override
 		public void execute() {
@@ -55,29 +49,70 @@ public class Calendar extends Composite {
 		
 	};
 	
+	private List<Appointment> samples = SampleData.getAppointments();
 	public Calendar() {
+		setLayout(new FlowLayout());
 		appointments = getCurrentCalendar();
+		bookingForm = new BookingForm(onAppointmentCreated);
 		
-		headerInfoPanel.add(new HTML("This is the Calendar header"));
+		rootPanel.setHeaderVisible(false);
+//		rootPanel.setLayout(new FitLayout());
 		
-		headerCtrlPanel.add(addButton);
-		headerCtrlPanel.add(addSampleButton);
+		Menu menu = createMenu();
 		
-		calHeader.setWidth("100%");
-		calHeader.addStyleName("wappy-calendar-header");
+		SplitButton addBtn = new SplitButton("Add");
+		addBtn.setIconStyle("wcalendar-icon-add");
+		addBtn.addSelectionListener(new SelectionListener<ButtonEvent>() {
+			public void componentSelected(ButtonEvent ce) {
+				bookingForm.open();
+			}
+		});
+		addBtn.setMenu(menu);
 		
-		calHeader.add(headerInfoPanel);
-		calHeader.add(headerCtrlPanel);
-		//calHeader.setCellHorizontalAlignment(headerCtrlPanel, HorizontalPanel.ALIGN_RIGHT);
-		
-		//calView.addStyleName("wappy-calendar-debugColor");
-		rootPanel.add(calHeader);
+//		ButtonBar btnBar = new ButtonBar();
+		ToolBar btnBar = new ToolBar();
+		btnBar.add(addBtn);
+		btnBar.add(new Button("Hej"));
+		btnBar.add(new ToolButton("x-tool-save"));
+			
+		rootPanel.add(btnBar);
 		rootPanel.add(calView);
-		initWidget(rootPanel);
+		add(rootPanel);
 	}
 
-	private List<Appointment> samples = SampleData.getAppointments();
 	
+	private Menu createMenu() {
+		Menu menu = new Menu();
+		MenuItem addApp = new MenuItem("Add new appointment",
+				new SelectionListener<MenuEvent>() {
+					@Override
+					public void componentSelected(MenuEvent ce) {
+						bookingForm.open();
+					}
+			});
+		MenuItem addSamples = new MenuItem("Add some samples",
+				new SelectionListener<MenuEvent>() {
+					@Override
+					public void componentSelected(MenuEvent ce) {
+						addSampleApps(samples);
+					}
+				});
+		MenuItem addSamplesView = new MenuItem("Add some samples(Only view)",
+				new SelectionListener<MenuEvent>() {
+					@Override
+					public void componentSelected(MenuEvent ce) {
+						calView.update(samples);
+						Info.display("", "Sample appointments was added to the calendar!");
+					}
+				});
+		
+		menu.add(addApp);
+		menu.add(addSamples);
+		menu.add(addSamplesView);
+		return menu;
+	}
+
+
 	private boolean addSampleApps(final List<Appointment> samples) {
 		if (samples.isEmpty()) {
 			calView.update(appointments);
@@ -132,22 +167,29 @@ public class Calendar extends Composite {
 		JSONObject jsonArgs = new JSONObject();
     	jsonArgs.put("subject", new JSONString(app.getSubject()));
     	
-    	String descr = app.getDescription();
-    	if (descr == null) {
+    	String str = app.getDescription();
+    	if (str == null) {
     		jsonArgs.put("description", new JSONString(""));
     	}
     	else {
-    		jsonArgs.put("description", new JSONString(descr));
+    		jsonArgs.put("description", new JSONString(str));
     	}
     	jsonArgs.put("startTimeStamp", new JSONNumber(app.getStartTimeStamp()));
     	jsonArgs.put("endTimeStamp", new JSONNumber(app.getEndTimeStamp()));
+    	
+    	str = app.getLocation();
+    	if (str == null) {
+    		jsonArgs.put("location", new JSONString(""));
+    	}
+    	else {
+    		jsonArgs.put("location", new JSONString(str));
+    	}
 		return jsonArgs;
 	}
 	
 	private List<Appointment> getCurrentCalendar() {
 		RequestBuilder builder =
-            new RequestBuilder(RequestBuilder.POST, 
-                               "http://127.0.0.1:8000/wcalendar/get_calendar/");
+            new RequestBuilder(RequestBuilder.POST, URL.encode(URL_GET_CAL));
 
         try {
         	builder.sendRequest("", new RequestCallback() {
@@ -169,6 +211,7 @@ public class Calendar extends Composite {
                             	appointments.add(new Appointment(
                             			result.get(i).get("subject").stringValue(),
                             			result.get(i).get("description").stringValue(),
+                            			result.get(i).get("location").stringValue(),
                             			result.get(i).get("startTimeStamp").longValue(),
                             			result.get(i).get("endTimeStamp").longValue(),
                             			result.get(i).get("weekNr").longValue())); // No intValue???!
@@ -191,9 +234,8 @@ public class Calendar extends Composite {
 		return appointments;
 	}
 
-	
-	private void openBookingForm() {
-		bookingForm = new BookingForm(onAppointmentCreated );
+	public boolean isGridView() {
+		return calView.isGridView();
 	}
 
 }
