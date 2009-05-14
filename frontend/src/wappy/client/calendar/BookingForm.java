@@ -20,6 +20,7 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
@@ -30,6 +31,7 @@ import com.google.gwt.user.client.DeferredCommand;
 import com.pathf.gwt.util.json.client.JSONWrapper;
 
 public class BookingForm {
+	private static final String URL_ADD_APP = "/wcalendar/add_appointment/";
 	final Window w = new Window();
 	Command onAppointmentCreated;
 	private long startTimeStamp, endTimeStamp;
@@ -168,8 +170,7 @@ public class BookingForm {
     	jsonArgs.put("endTimeStamp", new JSONNumber(appointment.getEndTimeStamp()));
     	
     	RequestBuilder builder =
-            new RequestBuilder(RequestBuilder.POST, 
-                               "http://127.0.0.1:8000/wcalendar/add_appointment/");
+            new RequestBuilder(RequestBuilder.POST, URL.encode(URL_ADD_APP));
 
         try {
         	builder.sendRequest(jsonArgs.toString(), new RequestCallback() {

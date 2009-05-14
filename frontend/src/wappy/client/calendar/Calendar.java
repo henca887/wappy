@@ -32,8 +32,8 @@ import com.pathf.gwt.util.json.client.JSONWrapper;
 
 public class Calendar extends LayoutContainer {
 
-	private static final String URL_GET_CAL = 
-		"http://127.0.0.1:8000/wcalendar/get_calendar/";
+	private static final String URL_GET_CAL = "/wcalendar/get_calendar/";
+	private static final String URL_ADD_APP = "/wcalendar/add_appointment/";
 	private ContentPanel rootPanel = new ContentPanel();
 	private BookingForm bookingForm;
 	private CalendarView calView = new CalendarView("grid");
@@ -122,8 +122,7 @@ public class Calendar extends LayoutContainer {
 		final Appointment sample = samples.get(0);
 		final JSONObject jsonArgs = getJSONArgs(sample);
     	RequestBuilder builder =
-            new RequestBuilder(RequestBuilder.POST, 
-                               "http://127.0.0.1:8000/wcalendar/add_appointment/");
+            new RequestBuilder(RequestBuilder.POST, URL.encode(URL_ADD_APP));
 
         try {
         	builder.sendRequest(jsonArgs.toString(), new RequestCallback() {
