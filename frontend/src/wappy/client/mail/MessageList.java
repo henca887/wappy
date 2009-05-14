@@ -136,4 +136,9 @@ public class MessageList extends ContentPanel {
         proxy.setUrl("/mail/messages/?path=" + URL.encodeComponent(path));
         loader.load(0, messagesPerPage);
     }
+
+    public void refresh() {
+        proxy.setUrl("/mail/messages/?path=" + URL.encodeComponent(path));
+        loader.load(0, messagesPerPage);
+    }
 }
