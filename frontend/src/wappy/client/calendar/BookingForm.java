@@ -6,7 +6,6 @@ import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.widget.Info;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.Window;
 import com.extjs.gxt.ui.client.widget.button.Button;
@@ -22,7 +21,6 @@ import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.json.client.JSONNull;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
@@ -31,68 +29,79 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
 import com.pathf.gwt.util.json.client.JSONWrapper;
 
-public class BookingForm extends LayoutContainer {
+public class BookingForm {
 	final Window w = new Window();
 	Command onAppointmentCreated;
 	private long startTimeStamp, endTimeStamp;
 	private Appointment appointment;
 	
+	private final FormPanel formPanel = new FormPanel();
+	private final DateField dateField = new DateField();
+	private final TimeField startTimeField = new TimeField();
+	private final TimeField endTimeField = new TimeField();
+	private final TextField<String> subjectField = new TextField<String>();
+	private final TextArea descriptionField = new TextArea();
+	private final TextField<String> locationField = new TextField<String>();
+	
 	public BookingForm(final Command onAppointmentCreated) {
 		this.onAppointmentCreated = onAppointmentCreated;
-		setLayout(new FlowLayout());
 		
-		
+		w.setLayout(new FlowLayout());
 		w.setPlain(false);
 		w.setWidth(350);
 		w.setHeading("Add new appointment");
 		w.setResizable(false);
 		w.setModal(true);
-		w.setAutoHeight(true);
 		w.setBlinkModal(true);
+		w.setAutoHeight(true);
 		
-		final FormPanel formPanel = new FormPanel();
 		formPanel.setHeaderVisible(false);
 		
-		final DateField dateField = new DateField();
 		dateField.setFieldLabel("Date");
 		dateField.setAllowBlank(false);
 		dateField.setMinValue(new Date()); // Don't allow to book in the past
 		dateField.getPropertyEditor().setFormat(DateTimeFormat.getFormat("yyyy-MM-dd"));
 		dateField.setValue(new Date());
 		formPanel.add(dateField);
-				
-		final TimeField startTimeField = new TimeField();
+		
 		startTimeField.setFieldLabel("Start");
 		startTimeField.setToolTip("Enter a start time");
 		startTimeField.setAllowBlank(false);
 		startTimeField.setFormat(DateTimeFormat.getFormat("HH:mm"));
+		startTimeField.setTypeAhead(true);
 		formPanel.add(startTimeField);
 		
 		
-		final TimeField endTimeField = new TimeField();
 		endTimeField.setFieldLabel("End");
 		endTimeField.setToolTip("Enter an end time");
 		endTimeField.setAllowBlank(false);
 		endTimeField.setFormat(DateTimeFormat.getFormat("HH:mm"));
+		endTimeField.setTypeAhead(true);
 		formPanel.add(endTimeField);
 		
-		final TextField<String> subjectField = new TextField<String>();
+		
 		subjectField.setFieldLabel("Subject");
 		subjectField.setToolTip("Enter a subject");
-		subjectField.setEmptyText("Enter a subject");
 		subjectField.setAllowBlank(false);
+		subjectField.setMaxLength(30);
 		formPanel.add(subjectField);
+		
+		locationField.setFieldLabel("Location");
+		locationField.setToolTip("Location is optional");
+		locationField.setEmptyText("Optional");
+		locationField.setAllowBlank(true);
+		locationField.setMaxLength(30);
+		formPanel.add(locationField);
 	
-		final TextArea descriptionField = new TextArea();
+		
 		descriptionField.setAllowBlank(true);
 		descriptionField.setFieldLabel("Description");
 		descriptionField.setToolTip("Description is optional");
-		descriptionField.setEmptyText("Optional: Enter a description, " +
-				"or leave it as it is for empty.");
+		descriptionField.setEmptyText("Optional");
 		
 		descriptionField.setPreventScrollbars(true);
 		descriptionField.setAutoValidate(true);
-		descriptionField.setMaxLength(100);
+		descriptionField.setMaxLength(160);
 		descriptionField.setValidationDelay(300);
 		formPanel.add(descriptionField);
 
@@ -110,11 +119,11 @@ public class BookingForm extends LayoutContainer {
 						endTimeStamp = WappyTime.getTimeStamp(date, endDateTime);
 						String subject = subjectField.getValue();
 						String descr = descriptionField.getValue();
-						
+						String location = locationField.getValue();
 						// DEBUG:SOLVED: better if weekNr could be generated on client
 						long weekNr = 0;
 						appointment = new Appointment(subject, descr,
-								startTimeStamp, endTimeStamp, weekNr);
+								location, startTimeStamp, endTimeStamp, weekNr);
 						saveAppointment(appointment);
 					}
 					else {
@@ -126,31 +135,32 @@ public class BookingForm extends LayoutContainer {
 		
 		formPanel.addButton(new Button("Cancel", new SelectionListener<ButtonEvent>() {
 			public void componentSelected(ButtonEvent ce) {
-				w.hide();
+				close();
 			}
 		}));
 
 		w.add(formPanel);
-		add(w);
-		w.show();
-		
-		DeferredCommand.addCommand(new Command() {
-            public void execute() {
-            	w.toFront();
-             }
-        });
+
 	}
 	
 	private void saveAppointment(final Appointment appointment) {
 		final JSONObject jsonArgs = new JSONObject();
     	jsonArgs.put("subject", new JSONString(appointment.getSubject()));
     	
-    	String descr = appointment.getDescription();
-    	if (descr == null) {
+    	String str = appointment.getDescription();
+    	if (str == null) {
     		jsonArgs.put("description", new JSONString("")); // JSONNull instead?
     	}
     	else {
-    		jsonArgs.put("description", new JSONString(descr));
+    		jsonArgs.put("description", new JSONString(str));
+    	}
+    	
+    	str = appointment.getLocation();
+    	if (str == null) {
+    		jsonArgs.put("location", new JSONString(""));
+    	}
+    	else {
+    		jsonArgs.put("location", new JSONString(str));
     	}
     	
     	// Note: JSONNumber is a double
@@ -176,7 +186,7 @@ public class BookingForm extends LayoutContainer {
                             JSONWrapper weekNr = root.get("weekNr");
                         	BookingForm.this.appointment.setWeekNr(weekNr.longValue());
                         	Info.display("", "New appointment was added to the calendar!");
-                            w.hide();
+                            close();
                             DeferredCommand.addCommand(onAppointmentCreated);
                         }
                         else {
@@ -197,6 +207,22 @@ public class BookingForm extends LayoutContainer {
 		
 	}
 
+	private void close() {
+		startTimeField.clearSelections();
+		endTimeField.clearSelections();
+		subjectField.setValue(null);
+		subjectField.clearInvalid();
+		locationField.setValue(null);
+		locationField.clearInvalid();
+		descriptionField.setValue(null);
+		descriptionField.clearInvalid();
+		w.hide();
+	}
+	
+	public void open() {
+		w.show();
+    }
+	
 	public Appointment getAppointment() {
 		return this.appointment;
 	}

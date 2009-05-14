@@ -12,6 +12,7 @@ def add_appointment(request):
     kwargs = simplejson.loads(request.raw_post_data)
     subj = kwargs['subject']
     descr = kwargs['description']
+    loc = kwargs['location']
     start = kwargs['startTimeStamp']
     end = kwargs['endTimeStamp']
 
@@ -27,9 +28,8 @@ def add_appointment(request):
     else:
         cal = request.user.calendars.filter()[0]
     
-    cal.appointments.create(subject=subj, description=descr,
-                            start_timestamp=start,
-                            end_timestamp=end)
+    cal.appointments.create(subject=subj, description=descr, location=loc,
+                            start_timestamp=start, end_timestamp=end)
     cal.save()
     d = datetime.date.fromtimestamp(start/1000)
     week_nr = d.isocalendar()[1]
@@ -55,6 +55,7 @@ def get_calendar(request):
             week_nr = d.isocalendar()[1]
             item = {'subject': app.subject,
                     'description': app.description,
+                    'location': app.location,
                     'startTimeStamp': app.start_timestamp,
                     'endTimeStamp': app.end_timestamp,
                     'weekNr': week_nr}

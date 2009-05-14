@@ -11,6 +11,7 @@ class Appointment(models.Model):
     calendar = models.ForeignKey(Calendar, related_name='appointments')
     subject = models.CharField(max_length=30)
     description = models.TextField(max_length=160, blank=True)
+    location = models.CharField(max_length=30, blank=True)
     start_timestamp = models.IntegerField()
     end_timestamp = models.IntegerField()
     def __unicode__(self):
