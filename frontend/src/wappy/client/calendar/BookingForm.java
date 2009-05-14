@@ -86,6 +86,8 @@ public class BookingForm {
 		subjectField.setToolTip("Enter a subject");
 		subjectField.setAllowBlank(false);
 		subjectField.setMaxLength(30);
+		subjectField.setAutoValidate(true);
+		subjectField.setValidationDelay(300);
 		formPanel.add(subjectField);
 		
 		locationField.setFieldLabel("Location");
@@ -93,18 +95,20 @@ public class BookingForm {
 		locationField.setEmptyText("Optional");
 		locationField.setAllowBlank(true);
 		locationField.setMaxLength(30);
+		locationField.setAutoValidate(true);
+		locationField.setValidationDelay(300);
 		formPanel.add(locationField);
 	
 		
-		descriptionField.setAllowBlank(true);
+		
 		descriptionField.setFieldLabel("Description");
+		descriptionField.setAllowBlank(true);
 		descriptionField.setToolTip("Description is optional");
 		descriptionField.setEmptyText("Optional");
-		
 		descriptionField.setPreventScrollbars(true);
 		descriptionField.setAutoValidate(true);
-		descriptionField.setMaxLength(160);
 		descriptionField.setValidationDelay(300);
+		descriptionField.setMaxLength(160);
 		formPanel.add(descriptionField);
 
 		formPanel.setButtonAlign(HorizontalAlignment.CENTER);
