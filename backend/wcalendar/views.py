@@ -11,30 +11,36 @@ from backend.wcalendar.models import Calendar
 def get_cal(request):
     calendars = request.user.calendars.filter()
     if calendars.count() == 0:
-        response_dict = {'error': 'No calendars found!',
+        cal = Calendar(user=request.user)
+        cal.save()
+        response_dict = {'error': 'No calendars found! Created a default calendar.',
                          'result': None}
     else:
-        result = []
-        cal = request.user.calendars.filter()[0]
+        cal = request.user.calendars.filter()[0] # Later, filter on current calendar
         appointments = cal.appointments.all()
-        
-        for app in appointments.order_by('start_timestamp'):
-            d = datetime.date.fromtimestamp(app.start_timestamp/1000)
-            week_nr = d.isocalendar()[1]
-            item = {'subject': app.subject,
-                    'description': app.description,
-                    'location': app.location,
-                    'startTimeStamp': app.start_timestamp,
-                    'endTimeStamp': app.end_timestamp,
-                    'weekNr': week_nr}
-            result.append(item)
-        
-            response_dict = {'error': None, 'result': result}
+        if appointments.count() == 0:
+            response_dict = {'error': 'Empty calendar',
+                         'result': None}
+        else:
+            result = []
+            for app in appointments.order_by('start_timestamp'):
+                d = datetime.date.fromtimestamp(app.start_timestamp/1000)
+                week_nr = d.isocalendar()[1]
+                item = {'subject': app.subject,
+                        'description': app.description,
+                        'location': app.location,
+                        'startTimeStamp': app.start_timestamp,
+                        'endTimeStamp': app.end_timestamp,
+                        'weekNr': week_nr}
+                result.append(item)
+            
+                response_dict = {'error': None, 'result': result}
     
     return HttpResponse(simplejson.dumps(response_dict),
                     mimetype='application/javascript')
 
 @login_required
+# Assumes user has at least one calendar
 def add_app(request):
     kwargs = simplejson.loads(request.raw_post_data)
     subj = kwargs['subject']
@@ -42,19 +48,9 @@ def add_app(request):
     loc = kwargs['location']
     start = kwargs['startTimeStamp']
     end = kwargs['endTimeStamp']
-
-#    try:
-#        cal = Calendar.objects.get(user=request.user)
-#    except(cal.DoesNotExist):
-#        cal = Calendar(user=request.user)
-#        cal.save()
-    calendars = request.user.calendars.filter()
-    if calendars.count() == 0:
-        cal = Calendar(user=request.user)
-        cal.save()
-    else:
-        cal = request.user.calendars.filter()[0]
     
+    cal = request.user.calendars.filter()[0] # Later, filter on current calendar
+        
     cal.appointments.create(subject=subj, description=descr, location=loc,
                             start_timestamp=start, end_timestamp=end)
     cal.save()
@@ -86,5 +82,3 @@ def rem_app(request):
 
     return HttpResponse(simplejson.dumps(response_dict),
                     mimetype='application/javascript')                        
-     
-                        
