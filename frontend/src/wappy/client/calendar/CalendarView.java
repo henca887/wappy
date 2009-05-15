@@ -48,4 +48,25 @@ public class CalendarView extends LayoutContainer {
 		return viewName == "grid";
 	}
 
+	public void removeAppointment() {
+		if (viewName == "grid") {
+			((GridsView) view).removeAppointment();
+		}
+		else if (viewName == "simple") {
+			((SimpleView) view).removeAppointment();
+		}
+	}
+
+	public Appointment getSelected() {
+		if (viewName == "grid") {
+			return ((GridsView) view).getSelected();
+		}
+		else if (viewName == "simple") {
+			return ((SimpleView) view).getSelected();
+		}
+		else {
+			return null;
+		}
+	}
+
 }

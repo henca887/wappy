@@ -3,6 +3,7 @@ from django.conf import settings
 
 
 urlpatterns = patterns('backend.wcalendar.views',
-    (r'^add_appointment/$', 'add_appointment'),
-    (r'^get_calendar/$', 'get_calendar'),
+    (r'^get_cal/$', 'get_cal'),
+    (r'^add_app/$', 'add_app'),
+    (r'^rem_app/$', 'rem_app'),
 )

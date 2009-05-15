@@ -51,4 +51,14 @@ public class SimpleView extends LayoutContainer {
 			row++;
 		}
 	}
+
+	public Appointment removeAppointment() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Appointment getSelected() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

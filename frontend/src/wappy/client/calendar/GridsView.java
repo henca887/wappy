@@ -21,6 +21,7 @@ public class GridsView extends LayoutContainer {
 	private List<ColumnConfig> config = new ArrayList<ColumnConfig>();
 	private final ColumnModel cm;
 	private Grid<Appointment> grid;
+	protected Appointment selectedAppointment;
 	
 	public GridsView() {
 		setLayout(new FitLayout());  
@@ -74,10 +75,10 @@ public class GridsView extends LayoutContainer {
 	    });  
 	    
 	    grid = new Grid<Appointment>(store, cm);  
-	    grid.setView(view);  
+	    grid.setView(view);   
 	    grid.setBorders(true);  
 	    grid.setAutoExpandColumn("description");
-	    
+	   
 	    add(grid);
 	}
 
@@ -88,5 +89,13 @@ public class GridsView extends LayoutContainer {
 	public void update(List<Appointment> appointments) {
 		store.add(appointments);
 	}
+
+	public Appointment getSelected() {
+		selectedAppointment = grid.getSelectionModel().getSelectedItem();
+		return selectedAppointment;
+	}
 	
+	public void removeAppointment() {
+		store.remove(selectedAppointment);
+	}
 }

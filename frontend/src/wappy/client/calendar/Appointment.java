@@ -86,6 +86,4 @@ public class Appointment extends BaseModel {
 	public String getLocation() {
 		return get("location");
 	}
-
-	
 }
