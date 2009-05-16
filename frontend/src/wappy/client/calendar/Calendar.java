@@ -15,6 +15,7 @@ import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.button.SplitButton;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
+import com.extjs.gxt.ui.client.widget.layout.ToolBarLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.SeparatorToolItem;
@@ -31,6 +32,7 @@ import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
+import com.google.gwt.user.client.ui.Widget;
 import com.pathf.gwt.util.json.client.JSONWrapper;
 
 // TODO: move out request methods
@@ -44,7 +46,7 @@ public class Calendar extends LayoutContainer {
 	
 	private ContentPanel rootPanel = new ContentPanel();
 	private BookingForm bookingForm;
-	private CalendarView calView = new CalendarView("grid");
+	private GridsView calView = new GridsView();
 	
 	private List<Appointment> appointments = new ArrayList<Appointment>();
 	private List<Appointment> samples = SampleData.getAppointments();
@@ -70,7 +72,8 @@ public class Calendar extends LayoutContainer {
 		rootPanel.setHeaderVisible(false);
 //		rootPanel.setLayout(new FitLayout());
 		
-		Menu menu = createMenu();
+		Menu addMenu = createAddMenu();
+		Menu remMenu = createRemMenu();
 		
 		SplitButton addBtn = new SplitButton("Add");
 		addBtn.setIconStyle("wcalendar-icon-add");
@@ -79,18 +82,21 @@ public class Calendar extends LayoutContainer {
 				bookingForm.open();
 			}
 		});
-		addBtn.setMenu(menu);
+		addBtn.setMenu(addMenu);
+		
+		SplitButton remBtn = new SplitButton("Remove");
+		remBtn.setIconStyle("wcalendar-icon-remove");
+		remBtn.addSelectionListener(new SelectionListener<ButtonEvent>() {
+			public void componentSelected(ButtonEvent ce) {
+				removeAppointment();
+			}
+		});
+		remBtn.setMenu(remMenu);
 		
 //		ButtonBar btnBar = new ButtonBar();
 		ToolBar btnBar = new ToolBar();
 		btnBar.add(addBtn);
 		btnBar.add(new SeparatorToolItem());
-		
-		Button remBtn = new Button("Remove", new SelectionListener<ButtonEvent>() {
-			public void componentSelected(ButtonEvent ce) {
-				removeAppointment();
-			};
-		});
 		btnBar.add(remBtn);
 		btnBar.add(new SeparatorToolItem());
 		btnBar.add(new Button("Calculator", new SelectionListener<ButtonEvent> (){
@@ -100,13 +106,13 @@ public class Calendar extends LayoutContainer {
 				calcWin.toFront();
 			}
 		}));
-		
+
 		rootPanel.add(btnBar);
 		rootPanel.add(calView);
 		add(rootPanel);
 	}
 
-	private Menu createMenu() {
+	private Menu createAddMenu() {
 		Menu menu = new Menu();
 		MenuItem addApp = new MenuItem("Add new appointment",
 				new SelectionListener<MenuEvent>() {
@@ -130,10 +136,36 @@ public class Calendar extends LayoutContainer {
 						Info.display("", "Sample appointments was added to the calendar!");
 					}
 				});
-		
+		addApp.setTitle("Add new appointent");
+		addSamples.setTitle("Add some sample appointments");
+		addSamplesView.setTitle("Adds some sample appointments to the view, not saved in calendar");
 		menu.add(addApp);
 		menu.add(addSamples);
 		menu.add(addSamplesView);
+		return menu;
+	}
+
+	private Menu createRemMenu() {
+		Menu menu = new Menu();
+		MenuItem removeApp = new MenuItem("Remove appointment",
+				new SelectionListener<MenuEvent>() {
+					@Override
+					public void componentSelected(MenuEvent ce) {
+						removeAppointment();
+					}
+			});
+		MenuItem removeAllApps = new MenuItem("Empty the calendar",
+				new SelectionListener<MenuEvent>() {
+					@Override
+					public void componentSelected(MenuEvent ce) {
+						// TODO
+					}
+				});
+		removeApp.setTitle("Removes selected appointment");
+		removeAllApps.setTitle("Removes all appointments from current " +
+				"calendar (!implemented)");
+		menu.add(removeApp);
+		menu.add(removeAllApps);
 		return menu;
 	}
 
@@ -242,7 +274,7 @@ public class Calendar extends LayoutContainer {
                             calView.update(appointments);
                         }
                 		else {
-                			// User has no calendars
+                			// User has no appointments booked
                 		}
                     }
                     else {
@@ -258,7 +290,10 @@ public class Calendar extends LayoutContainer {
 	}
 
 	private void removeAppointment() {
-		removeAppointment(calView.getSelected());
+		Appointment app = calView.getSelected();
+		if(app != null) {
+			removeAppointment(calView.getSelected());
+		}
 	}
 	
 	private void removeAppointment(Appointment app) {

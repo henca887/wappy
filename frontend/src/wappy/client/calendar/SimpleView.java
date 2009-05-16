@@ -6,7 +6,7 @@ import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.google.gwt.user.client.ui.FlexTable;
 
-public class SimpleView extends LayoutContainer {
+public class SimpleView extends LayoutContainer implements CalendarView {
 	private FlexTable table = new FlexTable();
 	private ContentPanel panel = new ContentPanel();
 	
@@ -52,13 +52,17 @@ public class SimpleView extends LayoutContainer {
 		}
 	}
 
-	public Appointment removeAppointment() {
-		// TODO Auto-generated method stub
-		return null;
+	public void removeAppointment() {
+		return;
 	}
 
 	public Appointment getSelected() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public boolean isGridView() {
+		return false;
 	}
 }

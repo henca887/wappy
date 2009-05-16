@@ -16,7 +16,7 @@ import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.google.gwt.i18n.client.DateTimeFormat;
 // TODO: 
 // Columns: Change month and day to short format
-public class GridsView extends LayoutContainer {
+public class GridsView extends LayoutContainer implements CalendarView {
 	private GroupingStore<Appointment> store = new GroupingStore<Appointment>();
 	private List<ColumnConfig> config = new ArrayList<ColumnConfig>();
 	private final ColumnModel cm;
@@ -97,5 +97,10 @@ public class GridsView extends LayoutContainer {
 	
 	public void removeAppointment() {
 		store.remove(selectedAppointment);
+	}
+
+	@Override
+	public boolean isGridView() {
+		return true;
 	}
 }
