@@ -29,9 +29,9 @@ def get_cal(request):
                 item = {'subject': app.subject,
                         'description': app.description,
                         'location': app.location,
-                        'startTimeStamp': app.start_timestamp,
-                        'endTimeStamp': app.end_timestamp,
-                        'weekNr': week_nr}
+                        'start_timestamp': app.start_timestamp,
+                        'end_timestamp': app.end_timestamp,
+                        'week_nr': week_nr}
                 result.append(item)
             
                 response_dict = {'error': None, 'result': result}
@@ -46,8 +46,8 @@ def add_app(request):
     subj = kwargs['subject']
     descr = kwargs['description']
     loc = kwargs['location']
-    start = kwargs['startTimeStamp']
-    end = kwargs['endTimeStamp']
+    start = kwargs['start_timestamp']
+    end = kwargs['end_timestamp']
     
     cal = request.user.calendars.filter()[0] # Later, filter on current calendar
         
@@ -58,7 +58,7 @@ def add_app(request):
     week_nr = d.isocalendar()[1]
     response_dict = {'error': None,
                      'result': 'Appointment added!',
-                     'weekNr': week_nr}
+                     'week_nr': week_nr}
 
     return HttpResponse(simplejson.dumps(response_dict),
                     mimetype='application/javascript')
@@ -67,8 +67,8 @@ def add_app(request):
 def rem_app(request):
     kwargs = simplejson.loads(request.raw_post_data)
     subj = kwargs['subject']
-    start = kwargs['startTimeStamp']
-    end = kwargs['endTimeStamp']
+    start = kwargs['start_timestamp']
+    end = kwargs['end_timestamp']
     
     try:
         cal = request.user.calendars.filter()[0]

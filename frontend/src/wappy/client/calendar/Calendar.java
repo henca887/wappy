@@ -181,8 +181,8 @@ public class Calendar extends LayoutContainer {
     	else {
     		jsonArgs.put("description", new JSONString(str));
     	}
-    	jsonArgs.put("startTimeStamp", new JSONNumber(app.getStartTimeStamp()));
-    	jsonArgs.put("endTimeStamp", new JSONNumber(app.getEndTimeStamp()));
+    	jsonArgs.put("start_timestamp", new JSONNumber(app.getStartTimeStamp()));
+    	jsonArgs.put("end_timestamp", new JSONNumber(app.getEndTimeStamp()));
     	
     	str = app.getLocation();
     	if (str == null) {
@@ -217,7 +217,7 @@ public class Calendar extends LayoutContainer {
                                 JSONParser.parse(response.getText()));
                         JSONWrapper error = root.get("error");
                         if (error.isNull()) { // properly checked?
-                            JSONWrapper weekNr = root.get("weekNr");
+                            JSONWrapper weekNr = root.get("week_nr");
                             sample.setWeekNr(weekNr.longValue());
                         	appointments.add(sample);
                         	samples.remove(0);
@@ -267,9 +267,9 @@ public class Calendar extends LayoutContainer {
                             			result.get(i).get("subject").stringValue(),
                             			result.get(i).get("description").stringValue(),
                             			result.get(i).get("location").stringValue(),
-                            			result.get(i).get("startTimeStamp").longValue(),
-                            			result.get(i).get("endTimeStamp").longValue(),
-                            			result.get(i).get("weekNr").longValue())); // No intValue???!
+                            			result.get(i).get("start_timestamp").longValue(),
+                            			result.get(i).get("end_timestamp").longValue(),
+                            			result.get(i).get("week_nr").longValue())); // No intValue???!
                             }
                             calView.update(appointments);
                         }

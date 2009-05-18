@@ -31,7 +31,7 @@ import com.google.gwt.user.client.DeferredCommand;
 import com.pathf.gwt.util.json.client.JSONWrapper;
 
 public class BookingForm {
-	private static final String URL_ADD_APP = "/wcalendar/add_appointment/";
+	private static final String URL_ADD_APP = "/wcalendar/add_app/";
 	final Window w = new Window();
 	Command onAppointmentCreated;
 	private long startTimeStamp, endTimeStamp;
@@ -170,8 +170,8 @@ public class BookingForm {
     	}
     	
     	// Note: JSONNumber is a double
-    	jsonArgs.put("startTimeStamp", new JSONNumber(appointment.getStartTimeStamp()));
-    	jsonArgs.put("endTimeStamp", new JSONNumber(appointment.getEndTimeStamp()));
+    	jsonArgs.put("start_timestamp", new JSONNumber(appointment.getStartTimeStamp()));
+    	jsonArgs.put("end_timestamp", new JSONNumber(appointment.getEndTimeStamp()));
     	
     	RequestBuilder builder =
             new RequestBuilder(RequestBuilder.POST, URL.encode(URL_ADD_APP));
@@ -188,7 +188,7 @@ public class BookingForm {
                                 JSONParser.parse(response.getText()));
                         JSONWrapper error = root.get("error");
                         if (error.isNull()) { // properly checked?
-                            JSONWrapper weekNr = root.get("weekNr");
+                            JSONWrapper weekNr = root.get("week_nr");
                         	BookingForm.this.appointment.setWeekNr(weekNr.longValue());
                         	Info.display("", "New appointment was added to the calendar!");
                             close();
