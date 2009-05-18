@@ -1,9 +1,10 @@
 from email.Header import decode_header
 from django.http import HttpResponse, HttpResponseForbidden
 from django.utils import simplejson
-from backend.mail.models import MailAccount
+from backend.mail.models import MailAccount, MailBody
 from backend.mail.utils import build_tree_from_paths, html_message_filter
 from backend.mail.imap import IMAPSynchronizer
+
 
 # @todo: move to utility module!
 def login_required_json(inner):
@@ -131,13 +132,36 @@ def messages_content(request):
         uid = int(kwargs['uid'])
         account_name, sep, folder_path = path.partition('/')
         account = request.user.mail_accounts.get(name=account_name)
-        synchronizer = IMAPSynchronizer(account)
-        synchronizer.login()
-        message_text = synchronizer.fetch_message(folder_path, uid)
-        synchronizer.logout()
+        try:
+            body = _fetch_local_message_body(account, folder_path, uid)
+        except:
+            body = _fetch_imap_message_body(account, folder_path, uid)
+            _store_local_message_body(account, folder_path, uid, body)
     except Exception as e:
-        print e
-        message_text = "failed to fetch message"
-    result = {'content': html_message_filter(message_text)}    
+        body = "failed to fetch message"
+    result = {'content': html_message_filter(body)}    
     return HttpResponse(simplejson.dumps(result),
                         mimetype='application/javascript')
+
+def _fetch_local_message_body(account, folder_path, uid):
+    """Try to fetch the requested message from local database."""
+    folder = account.folders.get(path=folder_path)
+    header = folder.headers.get(uid=uid)
+    return header.body.text
+
+def _fetch_imap_message_body(account, folder_path, uid):
+    """Helper routine that fetch the message body of a given message."""
+    synchronizer = IMAPSynchronizer(account)
+    synchronizer.login()
+    body = synchronizer.fetch_message(folder_path, uid)
+    synchronizer.logout()
+    return body
+
+def _store_local_message_body(account, folder_path, uid, text):
+    """Try to fetch the requested message from local database."""
+    folder = account.folders.get(path=folder_path)
+    header = folder.headers.get(uid=uid)
+    body = MailBody()
+    body.header = header
+    body.text = text
+    body.save()

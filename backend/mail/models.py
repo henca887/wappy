@@ -34,3 +34,8 @@ class MailRecipient(models.Model):
     header = models.ForeignKey(MailHeader, related_name='recipients')
     name = models.CharField(max_length=64)
     email = models.CharField(max_length=128)
+
+
+class MailBody(models.Model):
+    header = models.OneToOneField(MailHeader, related_name='body')
+    text = models.TextField()

@@ -4,6 +4,7 @@ import time
 from backend.mail.models import MailFolder, MailHeader
 
 
+# @todo: rename+refactor, could be organized better...
 class IMAPSynchronizer:
     """Synchronize local mail account with imap server."""
 
