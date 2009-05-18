@@ -43,6 +43,7 @@ public class MessageList extends ContentPanel {
     private ScriptTagProxy<PagingLoadResult<ModelData>> proxy;
     PagingLoader<PagingLoadResult<ModelData>> loader;
     String path = "";
+    String pattern = "";
 
     public MessageList(MessageView mv) {
         this.messageView = mv;
@@ -133,12 +134,22 @@ public class MessageList extends ContentPanel {
 
     public void display(String path) {
         this.path = path;
-        proxy.setUrl("/mail/messages/?path=" + URL.encodeComponent(path));
-        loader.load(0, messagesPerPage);
+        refresh();
     }
 
     public void refresh() {
-        proxy.setUrl("/mail/messages/?path=" + URL.encodeComponent(path));
+        String url = "/mail/messages/?path=" + path + "&pattern=" + pattern;
+        proxy.setUrl(URL.encode(url));
         loader.load(0, messagesPerPage);
+    }
+
+    public void search(String pattern) {
+        if (pattern == null) {
+            this.pattern = "";
+        }
+        else {
+            this.pattern = pattern;
+        }
+        refresh();
     }
 }

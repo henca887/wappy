@@ -4,6 +4,7 @@ import time
 from backend.mail.models import MailFolder, MailHeader
 
 
+# @todo: rename+refactor, could be organized better...
 class IMAPSynchronizer:
     """Synchronize local mail account with imap server."""
 
@@ -52,7 +53,10 @@ class IMAPSynchronizer:
                 break # use text/html when available
             elif part.get_content_type() == 'text/plain':
                 message_text = part.get_payload(decode=True)
+                # convert message to html.
+                message_text = message_text.replace('\r\n', '<br>')
         self.session.close()
+        message_text = message_text.decode('latin-1', 'ignore')
         return message_text if message_text else 'Unknown message type!'
 
     def _synchronize_folder_headers(self, folder):
