@@ -6,7 +6,8 @@
   <inherits name="com.google.gwt.json.JSON" />
   <inherits name="com.pathf.gwt.util.json.jsonwrapper" />
   <inherits name='com.extjs.gxt.ui.GXT'/>
-
+  <inherits name="com.extjs.gxt.desktop.WebDesktop"/>
+  
   <!-- Inherit the default GWT style sheet.  You can change       -->
   <!-- the theme of your GWT application by uncommenting          -->
   <!-- any one of the following lines.                            -->

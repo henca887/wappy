@@ -14,5 +14,21 @@
   font-weight: bold;
 }
 
+.wappy-desktop-background {
+  	background: url(images/wappy/back_stripes.jpg) repeat;
+}
+#wappy-mail-shortcut img {
+  	width: 64px;
+  	height: 64px;
+  	background-image: url(images/wappy/mail_64px.png);
+}
+
+#wappy-calendar-shortcut img {
+  	width: 64px;
+  	height: 64px;
+  	background-image: url(images/wappy/calendar-icon_64px.png);
+}
+
+
 /** Calendar style rules. */
 @import "Calendar.css";
