@@ -13,10 +13,6 @@ class MailTransportDetails(models.Model):
 class MailAccount(models.Model):
     user = models.ForeignKey(User, related_name='mail_accounts')
     name = models.CharField(max_length=64)
-    # server_address = models.CharField(max_length=128)
-    # server_port = models.IntegerField(null=True)
-    # username = models.CharField(max_length=64)
-    # password = models.CharField(max_length=64)
     incoming = models.ForeignKey(MailTransportDetails, related_name='iaccount')
     outgoing = models.ForeignKey(MailTransportDetails, related_name='oaccount')
 
