@@ -3,8 +3,9 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Group(models.Model):
-    name = models.CharField(max_length=64)
-    members = models.ManyToManyField(User, through='Membership')
+    name = models.CharField(max_length=64, unique=True)
+    # User already has a 'groups' field -> related_name='wappy_groups'
+    members = models.ManyToManyField(User, through='Membership', related_name='wappy_groups')
     creation_date = models.DateField(default=datetime.date.today())
     is_public = models.BooleanField(default=True)
     requests_allowed = models.BooleanField(default=True)
@@ -18,8 +19,7 @@ class Membership(models.Model):
     join_date = models.DateField(default=datetime.date.today())
     # The owner of the group has full rights
     is_owner = models.BooleanField(default=False)
-    # If other user can see a users membership in a specific group
-    #is_public = models.BooleanField(default=True)
+    is_admin = models.BooleanField(default=False)
     
     def __unicode__(self):
         return 'User: %s, Group: %s, Joined: %s' % \

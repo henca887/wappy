@@ -10,6 +10,7 @@ urlpatterns = patterns('',
     (r'^accounts/logout/$', 'backend.accounts.views.logout'),
     (r'^accounts/register/$', 'backend.accounts.views.register'),
     (r'^$', 'backend.welcome.views.index'),
+    (r'^groups/', include('backend.groups.urls')),
     (r'^mail/', include('backend.mail.urls')),
     (r'^wcalendar/', include('backend.wcalendar.urls')),
 )
