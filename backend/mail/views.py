@@ -2,9 +2,6 @@ from django.http import HttpResponse
 from django.utils import simplejson
 from backend.utils.decorators import login_required_json
 from backend.mail.utils import build_tree_from_paths, html_message_filter
-from backend.mail.utils import fetch_local_message_body
-from backend.mail.utils import store_local_message_body
-# from backend.mail.utils import fetch_imap_message_body
 from backend.mail.utils import ensure_private_message_account_exists
 from backend.mail.utils import create_mail_account
 from backend.mail.imap import IMAP, IMAPSession
@@ -41,26 +38,24 @@ def accounts_create(request):
                 simplejson.dumps({'error': 'Login failed!', 'result': None}),
                 mimetype='application/javascript')
         return HttpResponse(
-            simplejson.dumps({'error': None,
-                              'result': 'Account created!'}),
+            simplejson.dumps({'error': None, 'result': 'Account created!'}),
             mimetype='application/javascript')
 
 @login_required_json
+def accounts_list(request):
+    result = [account.name for account in request.user.mail_accounts.all()]
+    return HttpResponse(simplejson.dumps({'error': None, 'result': result}),
+                        mimetype='application/javascript')
+
+@login_required_json
 def synchronize(request):
-    """ Synchronizes all accounts fully. """
+    """Synchronizes all accounts fully."""
     error = None
     result = 'ok'
     for account in request.user.mail_accounts.all():
-        # if account.incoming.protocol != 'imap':
-            # continue
         try:
             ph = PROTOCOL_HANDLERS[account.incoming.protocol]
             ph.synchronize(account)
-            # synchronizer = IMAPSession(account)
-            # synchronizer.login()
-            # synchronizer.synchronize_folders()
-            # synchronizer.synchronize_headers()
-            # synchronizer.logout()
         except:
             error = '' if error is None else error
             error += 'Could not access: ' + account.name + '\n'
@@ -83,7 +78,7 @@ def folders(request):
 
 @login_required_json
 def messages(request):
-    """Fetch message headers"""
+    """Fetch message headers."""
     # Validate request parameters.
     try:
         pattern = request.GET.get('pattern', '')
@@ -136,12 +131,6 @@ def messages_content(request):
         account = request.user.mail_accounts.get(name=account_name)
         ph = PROTOCOL_HANDLERS[account.incoming.protocol]
         body = ph.fetch(account, folder_path, uid)
-        # try:
-            # body = fetch_local_message_body(account, folder_path, uid)
-        # except:
-            # #body = fetch_imap_message_body(account, folder_path, uid)
-            # body = ''
-            # store_local_message_body(account, folder_path, uid, body)
     except Exception as e:
         print e
         body = "failed to fetch message"
