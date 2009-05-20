@@ -1,7 +1,8 @@
 import re
-from backend.mail.imap import IMAPSynchronizer
+# from backend.mail.imap import IMAPSession
 from backend.mail.models import MailAccount, MailFolder, MailBody
 from backend.mail.models import MailTransportDetails
+
 
 def build_tree_from_paths(paths, sep='/'):
     root = []
@@ -44,14 +45,6 @@ def fetch_local_message_body(account, folder_path, uid):
     header = folder.headers.get(uid=uid)
     return header.body.text
 
-def fetch_imap_message_body(account, folder_path, uid):
-    """Helper routine that fetch the message body of a given message."""
-    synchronizer = IMAPSynchronizer(account)
-    synchronizer.login()
-    body = synchronizer.fetch_message(folder_path, uid)
-    synchronizer.logout()
-    return body
-
 def store_local_message_body(account, folder_path, uid, text):
     """Store message body in local database."""
     folder = account.folders.get(path=folder_path)
@@ -70,11 +63,11 @@ def ensure_private_message_account_exists(user):
         mail_account.user = user
         mail_account.name = account_name
         incoming = MailTransportDetails()
-        incoming.protocol = 'wappy'
+        incoming.protocol = 'pm'
         incoming.save()
         mail_account.incoming = incoming
         outgoing = MailTransportDetails()
-        outgoing.protocol = 'wappy'
+        outgoing.protocol = 'pm'
         outgoing.save()
         mail_account.outgoing = outgoing
         mail_account.save()
@@ -87,27 +80,27 @@ def ensure_private_message_account_exists(user):
         sent.path = 'Sent'
         sent.save()
 
-def create_mail_account(parameters):
+def create_mail_account(user, parameters):
     """Constuct mail account from dictionary with parameters."""
     account = MailAccount()
-    account.user = request.user
-    account.name = kwargs['name']
+    account.user = user
+    account.name = parameters['name']
 
     incoming = MailTransportDetails()
-    incoming.protocol = kwargs['incoming_protocol']
-    incoming.server_address = kwargs['incoming_server_address']
-    incoming.server_port = int(kwargs['incoming_server_port'])
-    incoming.username = kwargs['incoming_username']
-    incoming.password = kwargs['incoming_password']
+    incoming.protocol = parameters['incoming_protocol']
+    incoming.server_address = parameters['incoming_server_address']
+    incoming.server_port = int(parameters['incoming_server_port'])
+    incoming.username = parameters['incoming_username']
+    incoming.password = parameters['incoming_password']
     incoming.save()
     account.incoming = incoming
 
     outgoing = MailTransportDetails()
-    outgoing.protocol = kwargs['outgoing_protocol']
-    outgoing.server_address = kwargs['outgoing_server_address']
-    outgoing.server_port = int(kwargs['outgoing_server_port'])
-    outgoing.username = kwargs['outgoing_username']
-    outgoing.password = kwargs['outgoing_password']
+    outgoing.protocol = parameters['outgoing_protocol']
+    outgoing.server_address = parameters['outgoing_server_address']
+    outgoing.server_port = int(parameters['outgoing_server_port'])
+    outgoing.username = parameters['outgoing_username']
+    outgoing.password = parameters['outgoing_password']
     outgoing.save()
     account.outgoing = outgoing
 

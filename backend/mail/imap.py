@@ -2,11 +2,34 @@ import imaplib
 import email
 import time
 from backend.mail.models import MailFolder, MailHeader
+from backend.mail.utils import fetch_local_message_body
+from backend.mail.utils import store_local_message_body
 
 
-# @todo: rename+refactor, could be organized better...
-class IMAPSynchronizer:
-    """Synchronize local mail account with imap server."""
+class IMAP:
+    """IMAP implementation of the incoming interface."""
+
+    def synchronize(self, account):
+        session = IMAPSession(account)
+        session.login()
+        session.synchronize_folders()
+        session.synchronize_headers()
+        session.logout()
+
+    def fetch(self, account, folder, uid):
+        try:
+            body = fetch_local_message_body(account, folder, uid)
+        except:
+            session = IMAPSession(account)
+            session.login()
+            body = session.fetch_message(folder, uid)
+            session.logout()
+            store_local_message_body(account, folder, uid, body)
+        return body
+
+
+class IMAPSession:
+    """Helper class that make it simple to work with imap for this app."""
 
     def __init__(self, account):
         self.account = account

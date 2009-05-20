@@ -1,14 +1,20 @@
-from email.Header import decode_header
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse
 from django.utils import simplejson
 from backend.utils.decorators import login_required_json
-from backend.mail.models import MailAccount, MailBody, MailTransportDetails
 from backend.mail.utils import build_tree_from_paths, html_message_filter
 from backend.mail.utils import fetch_local_message_body
 from backend.mail.utils import store_local_message_body
-from backend.mail.utils import fetch_imap_message_body
+# from backend.mail.utils import fetch_imap_message_body
 from backend.mail.utils import ensure_private_message_account_exists
-from backend.mail.imap import IMAPSynchronizer
+from backend.mail.utils import create_mail_account
+from backend.mail.imap import IMAP, IMAPSession
+from backend.mail.pm import PM
+
+
+PROTOCOL_HANDLERS = {
+    'imap': IMAP(),
+    'pm': PM()
+}
 
 
 @login_required_json
@@ -21,9 +27,9 @@ def accounts_create(request):
                               'result': None}),
             mimetype='application/javascript')
     else:
-        account = create_mail_account(kwargs)
+        account = create_mail_account(request.user, kwargs)
         try:
-            synchronizer = IMAPSynchronizer(account)
+            synchronizer = IMAPSession(account)
             synchronizer.login()
             synchronizer.synchronize_folders()
             synchronizer.logout()
@@ -45,14 +51,16 @@ def synchronize(request):
     error = None
     result = 'ok'
     for account in request.user.mail_accounts.all():
-        if account.incoming.protocol != 'imap':
-            continue
+        # if account.incoming.protocol != 'imap':
+            # continue
         try:
-            synchronizer = IMAPSynchronizer(account)
-            synchronizer.login()
-            synchronizer.synchronize_folders()
-            synchronizer.synchronize_headers()
-            synchronizer.logout()
+            ph = PROTOCOL_HANDLERS[account.incoming.protocol]
+            ph.synchronize(account)
+            # synchronizer = IMAPSession(account)
+            # synchronizer.login()
+            # synchronizer.synchronize_folders()
+            # synchronizer.synchronize_headers()
+            # synchronizer.logout()
         except:
             error = '' if error is None else error
             error += 'Could not access: ' + account.name + '\n'
@@ -126,12 +134,16 @@ def messages_content(request):
         uid = int(kwargs['uid'])
         account_name, sep, folder_path = path.partition('/')
         account = request.user.mail_accounts.get(name=account_name)
-        try:
-            body = fetch_local_message_body(account, folder_path, uid)
-        except:
-            body = fetch_imap_message_body(account, folder_path, uid)
-            store_local_message_body(account, folder_path, uid, body)
+        ph = PROTOCOL_HANDLERS[account.incoming.protocol]
+        body = ph.fetch(account, folder_path, uid)
+        # try:
+            # body = fetch_local_message_body(account, folder_path, uid)
+        # except:
+            # #body = fetch_imap_message_body(account, folder_path, uid)
+            # body = ''
+            # store_local_message_body(account, folder_path, uid, body)
     except Exception as e:
+        print e
         body = "failed to fetch message"
     result = {'content': html_message_filter(body)}    
     return HttpResponse(simplejson.dumps(result),
