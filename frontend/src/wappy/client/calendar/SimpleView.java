@@ -28,6 +28,7 @@ public class SimpleView extends LayoutContainer implements CalendarView {
 		add(panel);
 	}
 	
+	@Override
 	public void update(Appointment appointment) {
 		int row = table.getRowCount();
 
@@ -38,7 +39,8 @@ public class SimpleView extends LayoutContainer implements CalendarView {
 		table.setText(row, 4, appointment.getSubject());
 		table.setText(row, 5, appointment.getDescription());
 	}
-
+	
+	@Override
 	public void update(List<Appointment> appointments) {
 		int row = table.getRowCount();
 		for (int i = 0; i < appointments.size(); i++) {
@@ -51,11 +53,22 @@ public class SimpleView extends LayoutContainer implements CalendarView {
 			row++;
 		}
 	}
-
-	public void removeAppointment() {
-		return;
+	
+	@Override
+	public void removeAppointment(Appointment app) {
+		
 	}
 
+	@Override
+	public void emptyCalendar() {
+		int row = table.getRowCount();
+		while (row > 1) {
+			table.removeRow(row);
+			row--;
+		}
+	}
+	
+	@Override
 	public Appointment getSelected() {
 		// TODO Auto-generated method stub
 		return null;

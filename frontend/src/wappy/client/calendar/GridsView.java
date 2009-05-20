@@ -21,7 +21,6 @@ public class GridsView extends LayoutContainer implements CalendarView {
 	private List<ColumnConfig> config = new ArrayList<ColumnConfig>();
 	private final ColumnModel cm;
 	private Grid<Appointment> grid;
-	protected Appointment selectedAppointment;
 	
 	public GridsView() {
 		setLayout(new FitLayout());  
@@ -81,24 +80,32 @@ public class GridsView extends LayoutContainer implements CalendarView {
 	   
 	    add(grid);
 	}
-
+	
+	@Override
 	public void update(Appointment appointment) {
 		store.add(appointment);
 	}
-
+	
+	@Override
 	public void update(List<Appointment> appointments) {
 		store.add(appointments);
 	}
-
+	
+	@Override
 	public Appointment getSelected() {
-		selectedAppointment = grid.getSelectionModel().getSelectedItem();
-		return selectedAppointment;
+		return grid.getSelectionModel().getSelectedItem();
 	}
 	
-	public void removeAppointment() {
-		store.remove(selectedAppointment);
+	@Override
+	public void removeAppointment(Appointment app) {
+		store.remove(app);
 	}
-
+	
+	@Override
+	public void emptyCalendar() {
+		store.removeAll();
+	}
+	
 	@Override
 	public boolean isGridView() {
 		return true;

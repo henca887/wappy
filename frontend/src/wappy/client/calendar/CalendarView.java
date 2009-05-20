@@ -2,10 +2,9 @@ package wappy.client.calendar;
 
 import java.util.List;
 
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-
 public interface CalendarView {
+	
+	public Appointment getSelected();
 	
 	public void update(Appointment appointment);
 
@@ -13,8 +12,8 @@ public interface CalendarView {
 
 	public boolean isGridView();
 
-	public void removeAppointment();
-
-	public Appointment getSelected();
+	public void removeAppointment(Appointment appointment);
+	
+	public void emptyCalendar();
 
 }
