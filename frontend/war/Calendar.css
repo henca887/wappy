@@ -22,5 +22,9 @@
 
 /** Icons */
 .wcalendar-icon-add {
-  background: url(../images/gxt/icons/wait.gif) no-repeat !important;
+  background: url(images/wappy/fam/add.gif) no-repeat !important;
+}
+
+.wcalendar-icon-remove {
+  background: url(images/wappy/fam/delete.gif) no-repeat !important;
 }

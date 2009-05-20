@@ -1,10 +1,52 @@
-/** Add css rules here for your application. */
 .gwt-TabPanelBottom {
     border: 3px solid #92c1f0;
     overflow: hidden;
     padding: 0px;
 }
 
+/** Desktop style rules */
+#wappy-mail-shortcut img {
+  	width: 64px;
+  	height: 64px;
+  	background-image: url(images/wappy/mail_64px.png) !important;
+}
+
+#wappy-calendar-shortcut img {
+  	width: 64px;
+  	height: 64px;
+  	background-image: url(images/wappy/calendar-icon_64px.png) !important;
+}
+
+.wappy-desktop-background {
+  	background: url(images/wappy/back_stripes.jpg) repeat;
+}
+
+.wappy-startmenu-user {
+	background-image: url(images/wappy/fam/user.gif) !important;
+	background-repeat:no-repeat;
+}
+
+.wappy-startmenu-mail {
+	background-image: url(images/wappy/mail_16px.png) !important;
+	background-repeat:no-repeat;
+}
+
+.wappy-startmenu-calendar {
+	background-image: url(images/wappy/calendar-icon_16px.png) !important;
+	background-repeat:no-repeat;
+}
+
+.wappy-startmenu-calendar {
+	background-image: url(images/wappy/calendar-icon_16px.png) !important;
+	background-repeat:no-repeat;
+}
+
+.wappy-startmenu-logout {
+	background-image: url(images/wappy/logout.gif) !important;
+	background-repeat:no-repeat;
+}
+
+/** Mail style rules. */
 .wappy-mail-browser {
     border-top: 3px solid #92c1f0;
 }
@@ -14,21 +56,13 @@
   font-weight: bold;
 }
 
-.wappy-desktop-background {
-  	background: url(images/wappy/back_stripes.jpg) repeat;
-}
-#wappy-mail-shortcut img {
-  	width: 64px;
-  	height: 64px;
-  	background-image: url(images/wappy/mail_64px.png);
-}
-
-#wappy-calendar-shortcut img {
-  	width: 64px;
-  	height: 64px;
-  	background-image: url(images/wappy/calendar-icon_64px.png);
-}
-
-
 /** Calendar style rules. */
 @import "Calendar.css";
+
+/** Groups style rules. */
+@import "Groups.css";
+
+
+
+
+
