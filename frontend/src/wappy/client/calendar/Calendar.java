@@ -3,6 +3,8 @@ package wappy.client.calendar;
 import java.util.ArrayList;
 import java.util.List;
 
+import wappy.client.ResponseHandler;
+import wappy.client.ServerComm;
 import wappy.client.calculator.Calculator;
 
 import com.extjs.gxt.ui.client.event.ButtonEvent;
@@ -21,34 +23,19 @@ import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.SeparatorToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestException;
-import com.google.gwt.http.client.Response;
-import com.google.gwt.json.client.JSONNumber;
-import com.google.gwt.json.client.JSONObject;
-import com.google.gwt.json.client.JSONParser;
-import com.google.gwt.json.client.JSONString;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
 import com.pathf.gwt.util.json.client.JSONWrapper;
 
-// TODO: move out request methods
 public class Calendar extends LayoutContainer {
 	private Calculator calc = new Calculator();
 	private Window calcWin = new Window();
-	
-	private static final String URL_GET_CAL = "/wcalendar/get_cal/";
-	private static final String URL_ADD_APP = "/wcalendar/add_app/";
-	private static final String URL_REM_APP = "/wcalendar/rem_app/";
-	
+
 	private ContentPanel rootPanel = new ContentPanel();
 	private BookingForm bookingForm;
 	private GridsView calView = new GridsView();
 	
 	private List<Appointment> appointments = new ArrayList<Appointment>();
-	private List<Appointment> samples = SampleData.getAppointments();
 	
 	private Command onAppointmentCreated = new Command() {
 		@Override
@@ -65,7 +52,7 @@ public class Calendar extends LayoutContainer {
 		calcWin.setLayout(new FitLayout());
 		calcWin.add(calc);
 		
-		appointments = getCurrentCalendar();
+		getCurrentCalendar();
 		bookingForm = new BookingForm(onAppointmentCreated);
 		
 		rootPanel.setHeaderVisible(false);
@@ -124,6 +111,7 @@ public class Calendar extends LayoutContainer {
 				new SelectionListener<MenuEvent>() {
 					@Override
 					public void componentSelected(MenuEvent ce) {
+						List<Appointment> samples = SampleData.getAppointments();
 						addSampleApps(samples);
 					}
 				});
@@ -131,7 +119,7 @@ public class Calendar extends LayoutContainer {
 				new SelectionListener<MenuEvent>() {
 					@Override
 					public void componentSelected(MenuEvent ce) {
-						calView.update(samples);
+						calView.update(SampleData.getAppointments());
 						Info.display("", "Sample appointments was added to the calendar!");
 					}
 				});
@@ -153,189 +141,127 @@ public class Calendar extends LayoutContainer {
 						removeAppointment();
 					}
 			});
-		MenuItem removeAllApps = new MenuItem("Empty the calendar",
+		MenuItem emptyCalendar = new MenuItem("Empty the calendar",
 				new SelectionListener<MenuEvent>() {
 					@Override
 					public void componentSelected(MenuEvent ce) {
-						// TODO
+						emptyCalendar();
 					}
 				});
 		removeApp.setTitle("Removes selected appointment");
-		removeAllApps.setTitle("Removes all appointments from current " +
-				"calendar (!implemented)");
+		emptyCalendar.setTitle("Removes all appointments from current " +
+				"calendar");
 		menu.add(removeApp);
-		menu.add(removeAllApps);
+		menu.add(emptyCalendar);
 		return menu;
 	}
 
-	// Helper method to make JSONObjects
-	private JSONObject getJSONArgs(Appointment app) {
-		JSONObject jsonArgs = new JSONObject();
-    	jsonArgs.put("subject", new JSONString(app.getSubject()));
-    	
-    	String str = app.getDescription();
-    	if (str == null) {
-    		jsonArgs.put("description", new JSONString(""));
-    	}
-    	else {
-    		jsonArgs.put("description", new JSONString(str));
-    	}
-    	jsonArgs.put("start_timestamp", new JSONNumber(app.getStartTimeStamp()));
-    	jsonArgs.put("end_timestamp", new JSONNumber(app.getEndTimeStamp()));
-    	
-    	str = app.getLocation();
-    	if (str == null) {
-    		jsonArgs.put("location", new JSONString(""));
-    	}
-    	else {
-    		jsonArgs.put("location", new JSONString(str));
-    	}
-		return jsonArgs;
-	}
-	
-	private boolean addSampleApps(final List<Appointment> samples) {
+	private List<Appointment> samples = new ArrayList<Appointment>();
+	private void addSampleApps(final List<Appointment> samples) {
 		if (samples.isEmpty()) {
-			calView.update(appointments);
-			Info.display("", "Sample appointments was added to the calendar!");
-			return true;
+			calView.update(this.samples);
+			this.samples.clear();
+			Info.display("Calendar",
+					"Sample appointments was added to the calendar!");
+			return;
 		}
 		final Appointment sample = samples.get(0);
-		final JSONObject jsonArgs = getJSONArgs(sample);
-    	RequestBuilder builder =
-            new RequestBuilder(RequestBuilder.POST, URL_ADD_APP);
-
-        try {
-        	builder.sendRequest(jsonArgs.toString(), new RequestCallback() {
-                public void onError(Request request, Throwable exception) {
-                    MessageBox.alert("Alert:Calendar:addSampleApps", "Request Error", null);
+		ResponseHandler rh = new ResponseHandler() {
+			@Override
+			public void on200Response(JSONWrapper root) {
+				JSONWrapper error = root.get("error");
+                if (error.isNull()) {
+                    JSONWrapper weekNr = root.get("week_nr");
+                    sample.setWeekNr(weekNr.longValue());
+                    Calendar.this.samples.add(sample);
+                    samples.remove(0);
+                	addSampleApps(samples);
                 }
-
-                public void onResponseReceived(Request request, Response response) {
-                    if (response.getStatusCode() == 200) {
-                    	JSONWrapper root = new JSONWrapper(
-                                JSONParser.parse(response.getText()));
-                        JSONWrapper error = root.get("error");
-                        if (error.isNull()) { // properly checked?
-                            JSONWrapper weekNr = root.get("week_nr");
-                            sample.setWeekNr(weekNr.longValue());
-                        	appointments.add(sample);
-                        	samples.remove(0);
-                        	addSampleApps(samples);
-                        }
-                        else {
-                        	MessageBox.alert("Error",
-	                        		error.getValue().toString(), null);
-                        }
-                    }
-                    else {
-                    	MessageBox.alert("Alert:Calendar:addSampleApps", "Http Error =(" + "\n"
-                        		+ jsonArgs.toString(), null);
-                    }
-                }       
-            });
-        }
-        catch (RequestException e) {
-        	MessageBox.alert("Alert:Calendar:addSampleApps", "Http Error =(", null);
-        	return false;
-        }
-		return true;
+                else {
+                	MessageBox.alert("Error", error.toString(), null);
+                }
+			}
+		};
+		ServerComm.addAppointment("Calendar", sample, rh);
 	}
 	
-	private List<Appointment> getCurrentCalendar() {
-		RequestBuilder builder =
-            new RequestBuilder(RequestBuilder.POST, URL_GET_CAL);
-
-        try {
-        	builder.sendRequest("", new RequestCallback() {
-                public void onError(Request request, Throwable exception) {
-                    MessageBox.alert("Alert:Calendar:getCurrentCalendar", "Request Error", null);
+	private void getCurrentCalendar() {
+		ResponseHandler rh = new ResponseHandler() {
+			@Override
+			public void on200Response(JSONWrapper root) {
+				JSONWrapper result = root.get("result");
+                JSONWrapper error = root.get("error");
+                
+        		if (error.isNull()) {
+        			Info.display("Calendar",
+                    		"Calendar contents have been retrieved!");
+                    for (int i = 0; i < result.size(); i++) {
+                    	appointments.add(new Appointment(
+                    			result.get(i).get("subject").stringValue(),
+                    			result.get(i).get("description").stringValue(),
+                    			result.get(i).get("location").stringValue(),
+                    			result.get(i).get("start_timestamp").longValue(),
+                    			result.get(i).get("end_timestamp").longValue(),
+                    			result.get(i).get("week_nr").longValue()));
+                    }
+                    calView.update(appointments);
                 }
-
-                public void onResponseReceived(Request request, Response response) {
-                	if (response.getStatusCode() == 200) {
-                		JSONWrapper root = new JSONWrapper(
-                                JSONParser.parse(response.getText()));
-                        JSONWrapper result = root.get("result");
-                        JSONWrapper error = root.get("error");
-                        
-                		if (error.isNull()) { // properly checked?
-                			Info.display("DEBUG:getCurrentCalendar: Success",
-                            		"Calendar contents have been retrieved!");
-                            for (int i = 0; i < result.size(); i++) {
-                            	appointments.add(new Appointment(
-                            			result.get(i).get("subject").stringValue(),
-                            			result.get(i).get("description").stringValue(),
-                            			result.get(i).get("location").stringValue(),
-                            			result.get(i).get("start_timestamp").longValue(),
-                            			result.get(i).get("end_timestamp").longValue(),
-                            			result.get(i).get("week_nr").longValue())); // No intValue???!
-                            }
-                            calView.update(appointments);
-                        }
-                		else {
-                			// User has no appointments booked
-                		}
-                    }
-                    else {
-                    	MessageBox.alert("Alert:Calendar:getCurrentCalendar", "Http Error =(", null);
-                    }
-                }       
-            });
-        }
-        catch (RequestException e) {
-        	MessageBox.alert("Alert:Calendar:getCurrentCalendar", "Http Error =(, Exception", null);
-        }
-		return appointments;
+        		else {
+        			// User has no appointments booked
+        		}
+			}
+		};
+		ServerComm.getCurrentCalendar("Calendar", rh);
 	}
 
 	private void removeAppointment() {
 		Appointment app = calView.getSelected();
 		if(app != null) {
-			removeAppointment(calView.getSelected());
+			removeAppointment(app);
 		}
 	}
 	
-	private void removeAppointment(Appointment app) {
-		final JSONObject jsonArgs = getJSONArgs(app);
-		
-		RequestBuilder builder =
-            new RequestBuilder(RequestBuilder.POST, URL_REM_APP);
-
-        try {
-        	builder.sendRequest(jsonArgs.toString(), new RequestCallback() {
-                public void onError(Request request, Throwable exception) {
-                    MessageBox.alert("Alert", "Request Error", null);
+	private void removeAppointment(final Appointment app) {
+		ResponseHandler rh = new ResponseHandler() {
+			@Override
+			public void on200Response(JSONWrapper root) {
+				JSONWrapper error = root.get("error");
+                if (error.isNull()) {
+                    Info.display("", "Selected Appointment was removed from the calendar!");
+                    appointments.remove(app);
+                    DeferredCommand.addCommand(new Command() {
+                    	@Override
+                    	public void execute() {
+                    		calView.removeAppointment(app);
+                    	}
+                    });
                 }
-
-                public void onResponseReceived(Request request, Response response) {
-                    if (response.getStatusCode() == 200) {
-                    	JSONWrapper root = new JSONWrapper(
-                                JSONParser.parse(response.getText()));
-                        JSONWrapper error = root.get("error");
-                        if (error.isNull()) { // properly checked?
-                            Info.display("", "Selected Appointment was removed from the calendar!");
-                            DeferredCommand.addCommand(new Command() {
-                            	@Override
-                            	public void execute() {
-                            		calView.removeAppointment();
-                            	}
-                            });
-                        }
-                        else {
-	                        MessageBox.alert("Alert:Calendar:removeAppointment", "DEBUG: " + 
-	                        		error.toString(), null);
-                        }
-                    }
-                    else {
-                    	MessageBox.alert("Alert:Calendar:removeAppointment", "Http Error =(" + "\n"
-                        		+ jsonArgs.toString(), null);
-                    }
-                }       
-        	});
-        }
-        catch (RequestException e) {
-        	MessageBox.alert("Alert:Calendar:removeAppointment", "Http Error =(", null);
-        }
+                else {
+                    MessageBox.alert("Calendar", error.toString(), null);
+                }
+			}
+		};
+		ServerComm.removeAppointment("BookingForm", app, rh);
+	}
+	
+	// TODO: Add confirmation dialog
+	private void emptyCalendar() {
+		ResponseHandler rh = new ResponseHandler() {
+			@Override
+			public void on200Response(JSONWrapper root) {
+				JSONWrapper error = root.get("error");
+                if (error.isNull()) {
+        			Info.display("Calendar",
+        					"All appointments have been removed!");
+                    calView.emptyCalendar();
+                    appointments.clear();
+                }
+        		else {
+        			Info.display("Calendar", error.toString());
+        		}
+			}
+		};
+		ServerComm.emptyCalendar("Calendar", rh);
 	}
 	
 	public boolean isGridView() {

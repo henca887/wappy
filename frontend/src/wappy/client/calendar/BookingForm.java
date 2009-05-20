@@ -2,6 +2,9 @@ package wappy.client.calendar;
 
 import java.util.Date;
 
+import wappy.client.ResponseHandler;
+import wappy.client.ServerComm;
+
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
@@ -15,22 +18,12 @@ import com.extjs.gxt.ui.client.widget.form.TextArea;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.form.TimeField;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestException;
-import com.google.gwt.http.client.Response;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.json.client.JSONNumber;
-import com.google.gwt.json.client.JSONObject;
-import com.google.gwt.json.client.JSONParser;
-import com.google.gwt.json.client.JSONString;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
 import com.pathf.gwt.util.json.client.JSONWrapper;
 
 public class BookingForm {
-	private static final String URL_ADD_APP = "/wcalendar/add_app/";
 	final Window w = new Window();
 	Command onAppointmentCreated;
 	private long startTimeStamp, endTimeStamp;
@@ -148,67 +141,24 @@ public class BookingForm {
 
 	}
 	
-	private void saveAppointment(final Appointment appointment) {
-		final JSONObject jsonArgs = new JSONObject();
-    	jsonArgs.put("subject", new JSONString(appointment.getSubject()));
-    	
-    	String str = appointment.getDescription();
-    	if (str == null) {
-    		jsonArgs.put("description", new JSONString("")); // JSONNull instead?
-    	}
-    	else {
-    		jsonArgs.put("description", new JSONString(str));
-    	}
-    	
-    	str = appointment.getLocation();
-    	if (str == null) {
-    		jsonArgs.put("location", new JSONString(""));
-    	}
-    	else {
-    		jsonArgs.put("location", new JSONString(str));
-    	}
-    	
-    	// Note: JSONNumber is a double
-    	jsonArgs.put("start_timestamp", new JSONNumber(appointment.getStartTimeStamp()));
-    	jsonArgs.put("end_timestamp", new JSONNumber(appointment.getEndTimeStamp()));
-    	
-    	RequestBuilder builder =
-            new RequestBuilder(RequestBuilder.POST, URL_ADD_APP);
-
-        try {
-        	builder.sendRequest(jsonArgs.toString(), new RequestCallback() {
-                public void onError(Request request, Throwable exception) {
-                    MessageBox.alert("Alert:BookingForm", "Request Error", null);
-                }
-
-                public void onResponseReceived(Request request, Response response) {
-                    if (response.getStatusCode() == 200) {
-                    	JSONWrapper root = new JSONWrapper(
-                                JSONParser.parse(response.getText()));
-                        JSONWrapper error = root.get("error");
-                        if (error.isNull()) { // properly checked?
-                            JSONWrapper weekNr = root.get("week_nr");
-                        	BookingForm.this.appointment.setWeekNr(weekNr.longValue());
-                        	Info.display("", "New appointment was added to the calendar!");
-                            close();
-                            DeferredCommand.addCommand(onAppointmentCreated);
-                        }
-                        else {
-	                        MessageBox.alert("Alert:BookingForm", "DEBUG: " + 
-	                        		error.toString(), null);
-                        }
-                    }
-                    else {
-                    	MessageBox.alert("Alert:BookingForm", "Http Error =(" + "\n"
-                        		+ jsonArgs.toString(), null);
-                    }
-                }       
-            });
-        }
-        catch (RequestException e) {
-        	MessageBox.alert("Alert:BookingForm", "Http Error =(", null);
-        }
-		
+	private void saveAppointment(Appointment app) {
+		ResponseHandler rh = new ResponseHandler() {
+			@Override
+			public void on200Response(JSONWrapper root) {
+				JSONWrapper error = root.get("error");
+		        if (error.isNull()) {
+		            JSONWrapper weekNr = root.get("week_nr");
+		        	BookingForm.this.appointment.setWeekNr(weekNr.longValue());
+		        	Info.display("", "New appointment was added to the calendar!");
+		            close();
+		            DeferredCommand.addCommand(onAppointmentCreated);
+		        }
+		        else {
+		            MessageBox.alert("BookingForm", error.toString(), null);
+		        }
+			}
+		};
+		ServerComm.addAppointment("BookingForm", app, rh);
 	}
 
 	private void close() {
