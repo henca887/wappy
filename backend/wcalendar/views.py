@@ -3,10 +3,15 @@ from django.http import HttpResponse
 from django.utils import simplejson
 from django.contrib.auth.decorators import login_required
 from backend.wcalendar.models import Calendar
+#from wcalendar.models import Calendar
 
 # TODO: a user may have more than one calendar!
 # Note: Had to calculate weekNr here ant send it to client
 
+def return_json_http(dict):
+    return HttpResponse(simplejson.dumps(dict),
+                        mimetype='application/javascript')
+    
 @login_required    
 def get_cal(request):
     calendars = request.user.calendars.filter()
@@ -82,3 +87,15 @@ def rem_app(request):
 
     return HttpResponse(simplejson.dumps(response_dict),
                     mimetype='application/javascript')                        
+
+def empty_cal(request):
+    try:
+        cal = request.user.calendars.filter()[0]
+        cal.appointments.all().delete()
+        
+        response_dict = {'error': None,
+                         'result': 'All appointments deleted!'}
+    except:
+        response_dict = {'error': 'Something went wrong when deleting all!',
+                         'result': None}
+    return return_json_http(response_dict)

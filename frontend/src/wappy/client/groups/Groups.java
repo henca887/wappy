@@ -55,6 +55,8 @@ public class Groups extends LayoutContainer{
 	}
 	public Groups() {
 		panel.setLayout(new FlowLayout());
+		panel.setHeading("Groups");
+		panel.setCollapsible(true);
 		getGroups();
 		
 		
@@ -104,8 +106,7 @@ public class Groups extends LayoutContainer{
                             updateTree(groups);
                         }
                 		else {
-                			MessageBox.alert("DEBUG:Groups", 
-                					error.getValue().toString(), null);
+                			Info.display("DEBUG:Groups", error.getValue().toString());
                 		}
                     }
                     else {

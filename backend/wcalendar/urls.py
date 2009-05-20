@@ -6,4 +6,5 @@ urlpatterns = patterns('backend.wcalendar.views',
     (r'^get_cal/$', 'get_cal'),
     (r'^add_app/$', 'add_app'),
     (r'^rem_app/$', 'rem_app'),
+    (r'^empty_cal/$', 'empty_cal'),
 )
