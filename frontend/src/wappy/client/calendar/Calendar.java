@@ -1,8 +1,10 @@
 package wappy.client.calendar;
 
-import wappy.client.calculator.Calculator;
 import java.util.ArrayList;
 import java.util.List;
+
+import wappy.client.calculator.Calculator;
+
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
@@ -15,7 +17,6 @@ import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.button.SplitButton;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
-import com.extjs.gxt.ui.client.widget.layout.ToolBarLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.SeparatorToolItem;
@@ -25,14 +26,12 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
-import com.google.gwt.http.client.URL;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
-import com.google.gwt.user.client.ui.Widget;
 import com.pathf.gwt.util.json.client.JSONWrapper;
 
 // TODO: move out request methods
@@ -203,7 +202,7 @@ public class Calendar extends LayoutContainer {
 		final Appointment sample = samples.get(0);
 		final JSONObject jsonArgs = getJSONArgs(sample);
     	RequestBuilder builder =
-            new RequestBuilder(RequestBuilder.POST, URL.encode(URL_ADD_APP));
+            new RequestBuilder(RequestBuilder.POST, URL_ADD_APP);
 
         try {
         	builder.sendRequest(jsonArgs.toString(), new RequestCallback() {
@@ -244,7 +243,7 @@ public class Calendar extends LayoutContainer {
 	
 	private List<Appointment> getCurrentCalendar() {
 		RequestBuilder builder =
-            new RequestBuilder(RequestBuilder.POST, URL.encode(URL_GET_CAL));
+            new RequestBuilder(RequestBuilder.POST, URL_GET_CAL);
 
         try {
         	builder.sendRequest("", new RequestCallback() {
@@ -300,7 +299,7 @@ public class Calendar extends LayoutContainer {
 		final JSONObject jsonArgs = getJSONArgs(app);
 		
 		RequestBuilder builder =
-            new RequestBuilder(RequestBuilder.POST, URL.encode(URL_REM_APP));
+            new RequestBuilder(RequestBuilder.POST, URL_REM_APP);
 
         try {
         	builder.sendRequest(jsonArgs.toString(), new RequestCallback() {
