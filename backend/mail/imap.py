@@ -12,10 +12,11 @@ class IMAPSynchronizer:
         self.account = account
         self.session = None
 
-    def login(self):
-        self.session = imaplib.IMAP4_SSL(self.account.server_address,
-                                         self.account.server_port)
-        self.session.login(self.account.username, self.account.password)
+    def login(self):       
+        self.session = imaplib.IMAP4_SSL(self.account.incoming.server_address,
+                                         self.account.incoming.server_port)
+        self.session.login(self.account.incoming.username,
+                           self.account.incoming.password)
 
     def logout(self):
         self.session.logout()

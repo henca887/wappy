@@ -1,20 +1,15 @@
 from email.Header import decode_header
 from django.http import HttpResponse, HttpResponseForbidden
 from django.utils import simplejson
-from backend.mail.models import MailAccount, MailBody
+from backend.utils.decorators import login_required_json
+from backend.mail.models import MailAccount, MailBody, MailTransportDetails
 from backend.mail.utils import build_tree_from_paths, html_message_filter
+from backend.mail.utils import fetch_local_message_body
+from backend.mail.utils import store_local_message_body
+from backend.mail.utils import fetch_imap_message_body
+from backend.mail.utils import ensure_private_message_account_exists
 from backend.mail.imap import IMAPSynchronizer
 
-
-# @todo: move to utility module!
-def login_required_json(inner):
-    """Deny none authenticated requests in a json compatible way."""
-    def authentication(*args, **kwargs):
-        if args[0].user.is_authenticated():
-            return inner(*args, **kwargs)
-        else:
-            return HttpResponseForbidden()
-    return authentication
 
 @login_required_json
 def accounts_create(request):
@@ -26,24 +21,18 @@ def accounts_create(request):
                               'result': None}),
             mimetype='application/javascript')
     else:
-        account = MailAccount()
-        account.user = request.user
-        account.name = kwargs['name']
-        account.server_address = kwargs['server_address']
-        account.server_port = int(kwargs['server_port'])
-        account.username = kwargs['username']
-        account.password = kwargs['password']
-        account.save()
+        account = create_mail_account(kwargs)
         try:
             synchronizer = IMAPSynchronizer(account)
             synchronizer.login()
             synchronizer.synchronize_folders()
             synchronizer.logout()
-        except:
+        except Exception as e:
+            account.incoming.delete()
+            account.outgoing.delete()
             account.delete()
             return HttpResponse(
-                simplejson.dumps({'error': 'Login failed!',
-                                  'result': None}),
+                simplejson.dumps({'error': 'Login failed!', 'result': None}),
                 mimetype='application/javascript')
         return HttpResponse(
             simplejson.dumps({'error': None,
@@ -56,6 +45,8 @@ def synchronize(request):
     error = None
     result = 'ok'
     for account in request.user.mail_accounts.all():
+        if account.incoming.protocol != 'imap':
+            continue
         try:
             synchronizer = IMAPSynchronizer(account)
             synchronizer.login()
@@ -72,6 +63,7 @@ def synchronize(request):
 @login_required_json
 def folders(request):
     """Fetch a tree with all mail folders that belong to the current user."""
+    ensure_private_message_account_exists(request.user)
     tree = []
     for account in request.user.mail_accounts.all():
         paths = [folder.path for folder in account.folders.all()]
@@ -83,7 +75,8 @@ def folders(request):
 
 @login_required_json
 def messages(request):
-    """Fetch message headers"""    
+    """Fetch message headers"""
+    # Validate request parameters.
     try:
         pattern = request.GET.get('pattern', '')
         callback = request.GET['callback']
@@ -106,6 +99,7 @@ def messages(request):
     # Construct query that find messages that match the request.
     query = folder.headers.filter(subject__contains=pattern)
 
+    # Determine query result order.
     if sort_field in ('subject', 'timestamp'):
         query = query.order_by(sort_field)
         if sort_dir == 'DESC':
@@ -133,35 +127,12 @@ def messages_content(request):
         account_name, sep, folder_path = path.partition('/')
         account = request.user.mail_accounts.get(name=account_name)
         try:
-            body = _fetch_local_message_body(account, folder_path, uid)
+            body = fetch_local_message_body(account, folder_path, uid)
         except:
-            body = _fetch_imap_message_body(account, folder_path, uid)
-            _store_local_message_body(account, folder_path, uid, body)
+            body = fetch_imap_message_body(account, folder_path, uid)
+            store_local_message_body(account, folder_path, uid, body)
     except Exception as e:
         body = "failed to fetch message"
     result = {'content': html_message_filter(body)}    
     return HttpResponse(simplejson.dumps(result),
                         mimetype='application/javascript')
-
-def _fetch_local_message_body(account, folder_path, uid):
-    """Try to fetch the requested message from local database."""
-    folder = account.folders.get(path=folder_path)
-    header = folder.headers.get(uid=uid)
-    return header.body.text
-
-def _fetch_imap_message_body(account, folder_path, uid):
-    """Helper routine that fetch the message body of a given message."""
-    synchronizer = IMAPSynchronizer(account)
-    synchronizer.login()
-    body = synchronizer.fetch_message(folder_path, uid)
-    synchronizer.logout()
-    return body
-
-def _store_local_message_body(account, folder_path, uid, text):
-    """Try to fetch the requested message from local database."""
-    folder = account.folders.get(path=folder_path)
-    header = folder.headers.get(uid=uid)
-    body = MailBody()
-    body.header = header
-    body.text = text
-    body.save()
