@@ -137,3 +137,21 @@ def messages_content(request):
     result = {'content': html_message_filter(body)}    
     return HttpResponse(simplejson.dumps(result),
                         mimetype='application/javascript')
+
+@login_required_json 
+def send(request):
+    """Send message."""
+    kwargs = simplejson.loads(request.raw_post_data)
+    try:
+        account_name = kwargs['from']
+        recipient = kwargs['to']
+        subject = kwargs['subject']
+        body = kwargs['body']
+        account = request.user.mail_accounts.get(name=account_name)
+        ph = PROTOCOL_HANDLERS[account.outgoing.protocol]
+        ph.send(account, recipient, subject, body)
+    except:
+        return HttpResponse(simplejson.dumps({'error': 'Internal Error'}),
+                            mimetype='application/javascript')
+    return HttpResponse(simplejson.dumps({'error': None}),
+                        mimetype='application/javascript')

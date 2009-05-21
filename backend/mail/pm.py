@@ -18,11 +18,10 @@ class PM:
         return body
 
     def send(self, account, recipient, subject, body):
-        try:
-            self._put_message_into_recipient_inbox(recipient, subject, body)
-            self._put_message_into_sent(account, recipient, subject, body)
-        except Exception as e:
-            print e
+        if recipient.endswith('@wappy'):
+            recipient, sep, atwappy = recipient.partition('@wappy')
+        self._put_message_into_recipient_inbox(recipient, subject, body)
+        self._put_message_into_sent(account, recipient, subject, body)
 
     def _put_message_into_recipient_inbox(self, recipient, subject, text):
         account_name = '%s@wappy' % recipient

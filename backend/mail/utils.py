@@ -1,5 +1,4 @@
 import re
-# from backend.mail.imap import IMAPSession
 from backend.mail.models import MailAccount, MailFolder, MailBody
 from backend.mail.models import MailTransportDetails
 
@@ -11,6 +10,7 @@ def build_tree_from_paths(paths, sep='/'):
     return root
 
 def insert_path_into_tree(tree, path):
+    """Helper routine for build_tree_from_paths."""
     name = path.pop(0)
     for child in tree:
         if child['name'] == name:
@@ -24,6 +24,7 @@ def insert_path_into_tree(tree, path):
             insert_path_into_tree(child['childs'], path)
 
 def match_at_least_one_pattern(text, patterns):
+    """Check if any of the regex match the given text."""
     for pattern in patterns:
         if re.search(pattern, text) is not None:
             return True
