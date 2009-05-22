@@ -1,17 +1,19 @@
 package wappy.client.groups;
 
+import java.util.List;
+
 import wappy.client.ResponseHandler;
 import wappy.client.ServerComm;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
-import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
+import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
-import com.extjs.gxt.ui.client.widget.form.ListField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Command;
@@ -22,24 +24,37 @@ public class AddMemberForm extends LayoutContainer {
 	
 	private FormPanel fp = new FormPanel();
 	private TextField<String> usrField = new TextField<String>();
-	// TODO: Implement group list to choose from when adding member
-	private ListField<ModelData> grList = new ListField<ModelData>();
+	private ListStore<Group> grStore = new ListStore<Group>();
+	private ComboBox<Group> grComboBox = new ComboBox<Group>();
+	
 	public AddMemberForm(final Command onMemberAdded) {
-		
-		
 		fp.setHeaderVisible(false);
+		fp.setButtonAlign(HorizontalAlignment.CENTER);
 		fp.collapse();
 		
 		usrField.setFieldLabel("Username");
+		usrField.setAllowBlank(false);
 		fp.add(usrField);
 		
-		fp.setButtonAlign(HorizontalAlignment.CENTER);
+		
+//		grStore.add(groups);
+//		grStore.setDefaultSort("name", SortDir.ASC);
+		grComboBox.setStore(grStore);
+		grComboBox.setFieldLabel("Group");
+		grComboBox.setEmptyText("Choose a group");
+		grComboBox.setDisplayField("name");
+		grComboBox.setValueField("name");
+		grComboBox.setAllowBlank(false);
+		grComboBox.setForceSelection(true);
+		
+		fp.add(grComboBox);
 		
 		final ResponseHandler rh = new ResponseHandler() {
 	    	@Override
 	    	public void on200Response(JSONValue value) {
 				GroupsJSON jsonUtil = new GroupsJSON(value);            
                 if (jsonUtil.noErrors()) {
+                	member = GroupsJSON.getCreatedMember();
                 	collapse();
                 	DeferredCommand.addCommand(onMemberAdded);
 		         }
@@ -54,7 +69,7 @@ public class AddMemberForm extends LayoutContainer {
 	    	@Override
 	    	public void componentSelected(ButtonEvent ce) {
 	    		if (fp.isValid(false)) {
-	    			member = ServerComm.addMember(usrField.getValue(),
+	    			ServerComm.addMember("Add member", getUserName(),
 	    					getGroupName(), rh);
 	    		}
 	    	}
@@ -70,8 +85,12 @@ public class AddMemberForm extends LayoutContainer {
 		add(fp);
 	}
 	
+	private String getUserName() {
+		return usrField.getValue();
+	}
+
 	private String getGroupName() {
-		return null;
+		return grComboBox.getValue().getName();
 	}
 
 	protected void collapse() {
@@ -86,13 +105,21 @@ public class AddMemberForm extends LayoutContainer {
 		fp.expand();
 	}
 
-	public void toggleCollapse() {
+	public boolean toggleCollapse() {
 		if (fp.isCollapsed()) {
 			fp.expand();
+			return true;
 		}
 		else {
 			fp.collapse();
+			return false;
 		}
+	}
+
+	public void updateGroupsList(List<Group> groups) {
+		grStore.removeAll();
+		grStore.add(groups);
+		
 	}
 
 }

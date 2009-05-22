@@ -2,7 +2,6 @@ package wappy.client;
 
 import wappy.client.calendar.Appointment;
 import wappy.client.groups.Group;
-import wappy.client.groups.Member;
 
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.google.gwt.http.client.Request;
@@ -22,6 +21,7 @@ public class ServerComm {
 	private static final String URL_GET_CAL = "/wcalendar/get_cal/";
 	private static final String URL_REM_APP = "/wcalendar/rem_app/";
 	private static final String URL_EMPTY_CAL = "/wcalendar/empty_cal/";
+	
 	private static final String URL_CREATE_GROUP = "/groups/create_group/";
 	private static final String URL_GET_GROUPS = "/groups/get_groups/";
 	private static final String URL_ADD_MEMBER = "/groups/add_member/";
@@ -119,9 +119,11 @@ public class ServerComm {
 		sendPostRequest(caller, URL_CREATE_GROUP, jsonArgs.toString(), rh);
 	}
 
-	public static Member addMember(String value, String groupName,
+	public static void addMember(String caller, String usrName, String groupName,
 			ResponseHandler rh) {
-		// TODO Auto-generated method stub
-		return null;
+		JSONObject jsonArgs = new JSONObject();
+    	jsonArgs.put("user_name", new JSONString(usrName));
+    	jsonArgs.put("group_name", new JSONString(usrName));
+    	sendPostRequest(caller, URL_ADD_MEMBER, jsonArgs.toString(), rh);
 	}
 }

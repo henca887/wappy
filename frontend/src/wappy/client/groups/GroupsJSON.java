@@ -2,16 +2,15 @@ package wappy.client.groups;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
 import com.pathf.gwt.util.json.client.JSONWrapper;
 
 public class GroupsJSON {
-	private JSONWrapper wrapper;
+	private static JSONWrapper wrapper;
 	
 	public GroupsJSON(JSONValue value) {
-		this.wrapper = new JSONWrapper(
+		wrapper = new JSONWrapper(
 				JSONParser.parse(value.toString()));
 	}
 
@@ -23,11 +22,11 @@ public class GroupsJSON {
 		return wrapper.get("error").getValue().toString();
 	}
 	
-	private JSONWrapper getResult() {
+	private static JSONWrapper getResult() {
 		return wrapper.get("result");
 	}
 
-	private Boolean toBoolean(JSONWrapper wrapper) {
+	private static Boolean toBoolean(JSONWrapper wrapper) {
 		return wrapper.getValue().isBoolean().booleanValue();
 	}
 	
@@ -65,7 +64,7 @@ public class GroupsJSON {
 		return members;
 	}
 
-	private Member getMember(JSONWrapper wrapper) {
+	private static Member getMember(JSONWrapper wrapper) {
 		String name = wrapper.get("name").stringValue();
 		String mail = wrapper.get("email").stringValue();
 		long timestamp = wrapper.get("join_date").longValue()*1000;
@@ -73,5 +72,9 @@ public class GroupsJSON {
 		Boolean isAdmin = toBoolean(wrapper.get("is_admin"));
 		Member member = new Member(name, mail, timestamp, isOwner, isAdmin);
 		return member;
+	}
+
+	public static Member getCreatedMember() {
+		return getMember(getResult());
 	}
 }

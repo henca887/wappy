@@ -83,6 +83,10 @@ def add_member(request):
         return return_json_http(response_dict)
     try:
         gr = request.user.wappy_groups.get(name=gr_name)
+        if Membership.objects.filter(user=usr, group=gr).count() > 0:
+            response_dict = {'error': 'User is already a member!',
+                             'result': None}
+            return return_json_http(response_dict)
         mship = Membership(user=usr, group=gr)
         mship.save()
         response_dict = {'error': None,
