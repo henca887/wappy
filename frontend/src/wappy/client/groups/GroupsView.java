@@ -13,6 +13,7 @@ import com.extjs.gxt.ui.client.widget.tree.Tree;
 import com.extjs.gxt.ui.client.widget.tree.TreeItem;
 import com.google.gwt.user.client.Command;
 
+// TODO: behöver inte skicka in hela klasser, utan bara strängar
 public class GroupsView extends LayoutContainer{
 	private Tree tree = new Tree();
 	private Command removeMember;
@@ -24,7 +25,7 @@ public class GroupsView extends LayoutContainer{
 		setLayout(new FlowLayout());
 		this.removeMember = removeMember;
 		this.removeGroup = removeGroup;
-		
+
 		tree.getStyle().setLeafIconStyle("wappy-groups-member-icon");
 		tree.getStyle().setItemStyle("wappy-groups-group-icon");
 		tree.setSelectionMode(SelectionMode.MULTI);
@@ -39,8 +40,7 @@ public class GroupsView extends LayoutContainer{
 	private Menu createContexMenu() {
 		Menu menu = new Menu();
 		menu.setWidth(130);  
-		  
-	    MenuItem remove = new MenuItem();  
+		MenuItem remove = new MenuItem();  
 	    remove.setText("Remove Selected");  
 	    remove.setIconStyle("wappy-icon-delete");  
 	    remove.addSelectionListener(new SelectionListener<MenuEvent>() {  
@@ -79,13 +79,18 @@ public class GroupsView extends LayoutContainer{
 	public void insert(Group group) {
 		TreeItem parent = new TreeItem();
 		parent.setLeaf(false);
+		String grName = group.getName();
+		parent.setId(grName);
+		parent.setText(grName);
 		tree.getRootItem().add(parent);
-		parent.setText(group.getName());
+		
 		List<Member> members = group.getMembers();
 		if(members != null) {
 			for (int m = 0; m < members.size(); m++) {
 				TreeItem child = new TreeItem();
-				child.setText(members.get(m).getName());
+				String mName = members.get(m).getName();
+				child.setText(mName);
+				child.setId(mName);
 				parent.add(child);
 			}
 		}
@@ -97,11 +102,13 @@ public class GroupsView extends LayoutContainer{
 			insert(groups.get(g));
 		}
 	}
-	// TODO: null !!!!!
+
 	public void insertMember(Group group, Member member) {
-		// GRRRRtree.
+		TreeItem parent = tree.getItemById(group.getName());
+		TreeItem child = new TreeItem();
+		String mName = member.getName();
+		child.setText(mName);
+		child.setId(mName);
+		parent.add(child);
 	}
-
-	
-
 }

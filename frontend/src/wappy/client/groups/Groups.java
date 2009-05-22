@@ -38,9 +38,10 @@ public class Groups extends LayoutContainer{
 	private Command onMemberAdded = new Command() {
 		@Override
 		public void execute() {
-			// TODO: Implement!
 			Group group = addForm.getGroup();
 			Member member = addForm.getMember();
+			// TODO: Is needed? does what it should?
+			groups.get(groups.indexOf(group)).insertMember(member);
 			view.insertMember(group, member);
 		}
 		
