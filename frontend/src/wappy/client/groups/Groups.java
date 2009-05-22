@@ -3,150 +3,96 @@ package wappy.client.groups;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.extjs.gxt.ui.client.util.TreeBuilder;
+import wappy.client.ResponseHandler;
+import wappy.client.ServerComm;
+
+import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.MessageBox;
+import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
-import com.extjs.gxt.ui.client.widget.tree.Tree;
-import com.extjs.gxt.ui.client.widget.tree.TreeItem;
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestException;
-import com.google.gwt.http.client.Response;
-import com.google.gwt.json.client.JSONArray;
-import com.google.gwt.json.client.JSONParser;
-import com.google.gwt.user.client.ui.FlexTable;
-import com.pathf.gwt.util.json.client.JSONWrapper;
+import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
+import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.client.Command;
 
 public class Groups extends LayoutContainer{
-	private static final String URL_CREATE_GROUP = "/groups/create_group/";
-	private static final String URL_GET_GROUPS = "/groups/get_groups/";
-	private static final String URL_ADD_MEMBER = "/groups/add_member/";
+	private CreateForm createForm;
+	private GroupsView view = new GroupsView();
 	
 	private ContentPanel panel = new ContentPanel();
-	private FlexTable table = new FlexTable();
 	private List<Group> groups = new ArrayList<Group>();
-	private Tree groupTree = new Tree();
-	class Group {
-		private String name;
-		private List<String> members;
-		
-		public Group(String name, List<String> members) {
-			this.name = name;
-			this.members = members;
+	
+	
+	private Command onGroupCreated = new Command() {
+		@Override
+		public void execute() {
+			Group group = createForm.getGroup();
+			groups.add(group);
+			view.update(group);
 		}
 		
-		public void setName(String name) {
-			this.name = name;
-		}
-		public String getName() {
-			return name;
-		}
-		public void setMembers(List<String> members) {
-			this.members = members;
-		}
-		public List<String> getMembers() {
-			return members;
-		}
-		
-	}
+	};
+	
 	public Groups() {
+		createForm = new CreateForm(onGroupCreated);
+		
 		panel.setLayout(new FlowLayout());
 		panel.setHeading("Groups");
 		panel.setCollapsible(true);
 		getGroups();
 		
 		
-		groupTree.getStyle().setLeafIconStyle("wappy-groups-member-icon");
-//		TextField<String> userField = new TextField<String>();
-//		Button addBtn = new Button("Add user");
-		panel.add(table);
-		panel.add(groupTree);
+		ToolBar toolBar = new ToolBar();
+		
+		Button createBtn = new Button("Create group", new SelectionListener<ButtonEvent>() {
+			@Override
+			public void componentSelected(ButtonEvent ce) {
+				createForm.open();
+			}
+		});
+		toolBar.add(createBtn);
+		
+		Button debugBtn = new Button("Debug:getgroups", new SelectionListener<ButtonEvent>() {
+			@Override
+			public void componentSelected(ButtonEvent ce) {
+				getGroups();
+			}
+		});
+		toolBar.add(debugBtn);
+		
+		panel.add(toolBar);
+		panel.add(view);
 		add(panel);
 		
 	}
 
 	private  void getGroups() {
-		RequestBuilder builder =
-            new RequestBuilder(RequestBuilder.POST, URL_GET_GROUPS);
-
-        try {
-        	builder.sendRequest("", new RequestCallback() {
-                public void onError(Request request, Throwable exception) {
-                    MessageBox.alert("Alert:Groups:getGroups", "Request Error", null);
+		ResponseHandler rh = new ResponseHandler() {
+			@Override
+			public void on200Response(JSONValue value) {
+				GroupsJSON jsonUtil = new GroupsJSON(value);            
+                if (jsonUtil.noErrors()) {
+					groups = jsonUtil.getGroups();
+					Info.display("DEBUG:Groups:getGroups: Success",
+                    		"Groups have been retrieved!");
+        			
+					view.update(groups);
                 }
+        		else {
+        			Info.display("Groups", jsonUtil.getErrorVal());
+        		}
 
-                public void onResponseReceived(Request request, Response response) {
-                	if (response.getStatusCode() == 200) {
-                		JSONWrapper root = new JSONWrapper(
-                                JSONParser.parse(response.getText()));
-                        JSONWrapper result = root.get("result");
-                        JSONWrapper error = root.get("error");
-
-                        if (error.isNull()) { // properly checked?
-                			Info.display("DEBUG:Groups:getGroups: Success",
-                            		"Groups have been retrieved!");
-                			for (int i = 0; i < result.size(); i++) {
-                            	String name = result.get(i).get("group").stringValue();
-                            	List<String> members = new ArrayList<String>();
-                        		JSONArray jsArr = 
-                        			result.get(i).get("members").getValue().isArray();
-                        		
-                        		for (int j = 0; j < jsArr.size(); j++) {
-                        			members.add(jsArr.get(j).isString().stringValue());
-                        		}
-                            	Group group = new Group(name, members);
-                            	groups.add(group);
-                            }
-//                            groupsView.update(groups);
-                            udateGroupView();
-                            updateTree(groups);
-                        }
-                		else {
-                			Info.display("DEBUG:Groups", error.getValue().toString());
-                		}
-                    }
-                    else {
-                    	MessageBox.alert("Alert:Groups:getGroups:", "Http Error =(", null);
-                    }
-                }       
-            });
-        }
-        catch (RequestException e) {
-        	MessageBox.alert("Alert:Groups:getGroups:", "Http Error =(, Exception", null);
-        }
-		
-	}
-	
-	protected void updateTree(List<Group> groups) {
-//		TreeBuilder.buildTree(tree, root)
-	}
-
-	protected void udateGroupView() {
-		if (groups == null) {
-			table.setText(0, 0, "You don't participate in any group.");
-		}
-		else {
-			for (int i = 0; i < groups.size(); i++) {
-				String grName = groups.get(i).getName();
-				List<String> members = groups.get(i).getMembers();
-				table.setText(i, 0, grName);
-				for (int j = i; j < members.size(); j++) {
-					table.setText(j+1, 1, members.get(j));
-				}
 			}
-		}
-		
+		};
+		ServerComm.getGroups("Groups", rh);
 	}
 
-	public void createGroup(String grName) {
-		
-	}
-	
-	public void addMember(String userName) {
-		
-	}
+//	public void createGroup() {
+//	}
+//	
+//	public void addMember(String userName) {
+//		
+//	}
 }

@@ -1,7 +1,7 @@
 package wappy.client;
 
-import com.pathf.gwt.util.json.client.JSONWrapper;
+import com.google.gwt.json.client.JSONValue;
 
 public interface ResponseHandler {
-	public void on200Response(JSONWrapper root);
+	public void on200Response(JSONValue root);
 }

@@ -56,6 +56,15 @@
   font-weight: bold;
 }
 
+/** Icons */
+.wappy-icon-add {
+  background: url(images/wappy/fam/add.gif) no-repeat !important;
+}
+
+.wappy-icon-remove {
+  background: url(images/wappy/fam/delete.gif) no-repeat !important;
+}
+
 /** Calendar style rules. */
 @import "Calendar.css";
 

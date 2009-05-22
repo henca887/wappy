@@ -23,9 +23,9 @@ import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.SeparatorToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
+import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
-import com.pathf.gwt.util.json.client.JSONWrapper;
 
 public class Calendar extends LayoutContainer {
 	private Calculator calc = new Calculator();
@@ -40,8 +40,9 @@ public class Calendar extends LayoutContainer {
 	private Command onAppointmentCreated = new Command() {
 		@Override
 		public void execute() {
-			appointments.add(bookingForm.getAppointment());
-			calView.update(bookingForm.getAppointment());
+			Appointment app = bookingForm.getAppointment();
+			appointments.add(app);
+			calView.update(app);
 		}
 		
 	};
@@ -62,7 +63,7 @@ public class Calendar extends LayoutContainer {
 		Menu remMenu = createRemMenu();
 		
 		SplitButton addBtn = new SplitButton("Add");
-		addBtn.setIconStyle("wcalendar-icon-add");
+		addBtn.setIconStyle("wappy-icon-add");
 		addBtn.addSelectionListener(new SelectionListener<ButtonEvent>() {
 			public void componentSelected(ButtonEvent ce) {
 				bookingForm.open();
@@ -71,7 +72,7 @@ public class Calendar extends LayoutContainer {
 		addBtn.setMenu(addMenu);
 		
 		SplitButton remBtn = new SplitButton("Remove");
-		remBtn.setIconStyle("wcalendar-icon-remove");
+		remBtn.setIconStyle("wappy-icon-remove");
 		remBtn.addSelectionListener(new SelectionListener<ButtonEvent>() {
 			public void componentSelected(ButtonEvent ce) {
 				removeAppointment();
@@ -80,12 +81,12 @@ public class Calendar extends LayoutContainer {
 		remBtn.setMenu(remMenu);
 		
 //		ButtonBar btnBar = new ButtonBar();
-		ToolBar btnBar = new ToolBar();
-		btnBar.add(addBtn);
-		btnBar.add(new SeparatorToolItem());
-		btnBar.add(remBtn);
-		btnBar.add(new SeparatorToolItem());
-		btnBar.add(new Button("Calculator", new SelectionListener<ButtonEvent> (){
+		ToolBar toolBar = new ToolBar();
+		toolBar.add(addBtn);
+		toolBar.add(new SeparatorToolItem());
+		toolBar.add(remBtn);
+		toolBar.add(new SeparatorToolItem());
+		toolBar.add(new Button("Calculator", new SelectionListener<ButtonEvent> (){
 			@Override
 			public void componentSelected(ButtonEvent ce) {
 				calcWin.show();
@@ -93,7 +94,7 @@ public class Calendar extends LayoutContainer {
 			}
 		}));
 
-		rootPanel.add(btnBar);
+		rootPanel.add(toolBar);
 		rootPanel.add(calView);
 		add(rootPanel);
 	}
@@ -168,17 +169,16 @@ public class Calendar extends LayoutContainer {
 		final Appointment sample = samples.get(0);
 		ResponseHandler rh = new ResponseHandler() {
 			@Override
-			public void on200Response(JSONWrapper root) {
-				JSONWrapper error = root.get("error");
-                if (error.isNull()) {
-                    JSONWrapper weekNr = root.get("week_nr");
-                    sample.setWeekNr(weekNr.longValue());
+			public void on200Response(JSONValue value) {
+				CalendarJSON jsonUtil = new CalendarJSON(value);            
+                if (jsonUtil.noErrors()) {
+                    sample.setWeekNr(jsonUtil.getWeekNr());
                     Calendar.this.samples.add(sample);
                     samples.remove(0);
                 	addSampleApps(samples);
                 }
                 else {
-                	MessageBox.alert("Error", error.toString(), null);
+                	MessageBox.alert("Calendar", jsonUtil.getErrorVal(), null);
                 }
 			}
 		};
@@ -188,22 +188,12 @@ public class Calendar extends LayoutContainer {
 	private void getCurrentCalendar() {
 		ResponseHandler rh = new ResponseHandler() {
 			@Override
-			public void on200Response(JSONWrapper root) {
-				JSONWrapper result = root.get("result");
-                JSONWrapper error = root.get("error");
-                
-        		if (error.isNull()) {
+			public void on200Response(JSONValue value) {
+				CalendarJSON jsonUtil = new CalendarJSON(value);            
+                if (jsonUtil.noErrors()) {
         			Info.display("Calendar",
                     		"Calendar contents have been retrieved!");
-                    for (int i = 0; i < result.size(); i++) {
-                    	appointments.add(new Appointment(
-                    			result.get(i).get("subject").stringValue(),
-                    			result.get(i).get("description").stringValue(),
-                    			result.get(i).get("location").stringValue(),
-                    			result.get(i).get("start_timestamp").longValue(),
-                    			result.get(i).get("end_timestamp").longValue(),
-                    			result.get(i).get("week_nr").longValue()));
-                    }
+                    appointments = jsonUtil.getAllAppointments();
                     calView.update(appointments);
                 }
         		else {
@@ -224,9 +214,9 @@ public class Calendar extends LayoutContainer {
 	private void removeAppointment(final Appointment app) {
 		ResponseHandler rh = new ResponseHandler() {
 			@Override
-			public void on200Response(JSONWrapper root) {
-				JSONWrapper error = root.get("error");
-                if (error.isNull()) {
+			public void on200Response(JSONValue value) {
+				CalendarJSON jsonUtil = new CalendarJSON(value);            
+                if (jsonUtil.noErrors()) {
                     Info.display("", "Selected Appointment was removed from the calendar!");
                     appointments.remove(app);
                     DeferredCommand.addCommand(new Command() {
@@ -237,7 +227,7 @@ public class Calendar extends LayoutContainer {
                     });
                 }
                 else {
-                    MessageBox.alert("Calendar", error.toString(), null);
+                    MessageBox.alert("Calendar", jsonUtil.getErrorVal(), null);
                 }
 			}
 		};
@@ -248,16 +238,16 @@ public class Calendar extends LayoutContainer {
 	private void emptyCalendar() {
 		ResponseHandler rh = new ResponseHandler() {
 			@Override
-			public void on200Response(JSONWrapper root) {
-				JSONWrapper error = root.get("error");
-                if (error.isNull()) {
+			public void on200Response(JSONValue value) {
+				CalendarJSON jsonUtil = new CalendarJSON(value);            
+                if (jsonUtil.noErrors()) {
         			Info.display("Calendar",
         					"All appointments have been removed!");
                     calView.emptyCalendar();
                     appointments.clear();
                 }
         		else {
-        			Info.display("Calendar", error.toString());
+        			MessageBox.alert("Calendar", jsonUtil.getErrorVal(), null);
         		}
 			}
 		};

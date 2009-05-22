@@ -20,11 +20,3 @@
     z-index: 9998;
 }
 
-/** Icons */
-.wcalendar-icon-add {
-  background: url(images/wappy/fam/add.gif) no-repeat !important;
-}
-
-.wcalendar-icon-remove {
-  background: url(images/wappy/fam/delete.gif) no-repeat !important;
-}

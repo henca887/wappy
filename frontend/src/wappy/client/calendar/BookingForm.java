@@ -19,9 +19,9 @@ import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.form.TimeField;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
-import com.pathf.gwt.util.json.client.JSONWrapper;
 
 public class BookingForm {
 	final Window w = new Window();
@@ -144,17 +144,17 @@ public class BookingForm {
 	private void saveAppointment(Appointment app) {
 		ResponseHandler rh = new ResponseHandler() {
 			@Override
-			public void on200Response(JSONWrapper root) {
-				JSONWrapper error = root.get("error");
-		        if (error.isNull()) {
-		            JSONWrapper weekNr = root.get("week_nr");
-		        	BookingForm.this.appointment.setWeekNr(weekNr.longValue());
+			public void on200Response(JSONValue value) {
+				CalendarJSON jsonUtil = new CalendarJSON(value);            
+                if (jsonUtil.noErrors()) {
+		            long weekNr = jsonUtil.getWeekNr();
+		        	BookingForm.this.appointment.setWeekNr(weekNr);
 		        	Info.display("", "New appointment was added to the calendar!");
 		            close();
 		            DeferredCommand.addCommand(onAppointmentCreated);
 		        }
 		        else {
-		            MessageBox.alert("BookingForm", error.toString(), null);
+		            MessageBox.alert("BookingForm", jsonUtil.getErrorVal(), null);
 		        }
 			}
 		};

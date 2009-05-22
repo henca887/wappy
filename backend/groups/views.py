@@ -1,3 +1,4 @@
+import time
 from django.http import HttpResponse
 from django.utils import simplejson
 from django.contrib.auth.models import User
@@ -10,9 +11,10 @@ def return_json_http(dict):
 
 def create_group(request):
     kwargs = simplejson.loads(request.raw_post_data)
-    gr_name = kwargs['group_name']
+    gr_name = kwargs['name']
     is_pub = kwargs['is_public']
     reqs_allowed = kwargs['requests_allowed']
+    
     existing_group = Group.objects.filter(name=gr_name)
     if existing_group.count() == 0:
         try:
@@ -32,12 +34,19 @@ def create_group(request):
                          'result': None}
     return return_json_http(response_dict)
 
-def get_group_members(gr, member):
-    members = gr.members.all()
+def get_group_members(gr, requester):
+    members = gr.members.all().exclude(username=requester)
     users = []
-    for user in members:
-        users.append(user.username)
-    users.remove(member)
+    for member in members:
+        mship = Membership.objects.get(group=gr, user=member)
+        timestamp = time.mktime(mship.join_date.timetuple())
+        timestamp = long(timestamp)
+        usr = {'name': member.username,
+               'email': member.email,
+               'is_admin': mship.is_admin,
+               'is_owner': mship.is_owner,
+               'join_date': timestamp}
+        users.append(usr)
     return users
 
 def get_groups(request):
@@ -48,8 +57,12 @@ def get_groups(request):
     else:
         result = []
         for gr in groups:
-            object = {'group': gr.name,
-                      'members': get_group_members(gr, request.user.username)}
+            group = {'name': gr.name,
+                     'is_public': gr.is_public,
+                     'requests_allowed': gr.requests_allowed}
+            members = get_group_members(gr, request.user.username)
+            object = {'group': group,
+                      'members': members}
             
             result.append(object)
         response_dict = {'error': None,
@@ -71,7 +84,7 @@ def add_member(request):
         mship = Membership(user=usr, group=gr)
         mship.save()
         response_dict = {'error': None,
-                         'result': 'Group created!'}
+                         'result': 'Member added!'}
     except:
         response_dict = {'error': 'Something went wrong when adding member!',
                          'result': None}

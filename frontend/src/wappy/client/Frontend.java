@@ -27,6 +27,7 @@ public class Frontend implements EntryPoint {
     private HorizontalPanel toolBar = new HorizontalPanel();
     
     private Calendar calendar = new Calendar();
+    private Groups groups = new Groups();
     private Desktop desktop;
     
     public void onModuleLoad() {
@@ -99,7 +100,7 @@ public class Frontend implements EntryPoint {
       
       VerticalPanel vp = new VerticalPanel();
       vp.add(toolBar);
-      vp.add(new Groups());
+      vp.add(groups);
       
       RootPanel.get().add(vp);
 	}
