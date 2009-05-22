@@ -77,4 +77,5 @@ public class GroupsJSON {
 	public static Member getCreatedMember() {
 		return getMember(getResult());
 	}
+
 }

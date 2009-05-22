@@ -1,7 +1,7 @@
 import datetime
 from django.http import HttpResponse
 from django.utils import simplejson
-from django.contrib.auth.decorators import login_required
+from backend.utils.decorators import login_required_json
 from backend.wcalendar.models import Calendar
 #from wcalendar.models import Calendar
 
@@ -12,7 +12,7 @@ def return_json_http(dict):
     return HttpResponse(simplejson.dumps(dict),
                         mimetype='application/javascript')
     
-@login_required    
+@login_required_json   
 def get_cal(request):
     calendars = request.user.calendars.filter()
     if calendars.count() == 0:
@@ -44,8 +44,9 @@ def get_cal(request):
     return HttpResponse(simplejson.dumps(response_dict),
                     mimetype='application/javascript')
 
-@login_required
+
 # Assumes user has at least one calendar
+@login_required_json
 def add_app(request):
     kwargs = simplejson.loads(request.raw_post_data)
     subj = kwargs['subject']
@@ -69,6 +70,7 @@ def add_app(request):
                     mimetype='application/javascript')
 
 # TODO: do proper checks
+@login_required_json
 def rem_app(request):
     kwargs = simplejson.loads(request.raw_post_data)
     subj = kwargs['subject']
@@ -88,6 +90,7 @@ def rem_app(request):
     return HttpResponse(simplejson.dumps(response_dict),
                     mimetype='application/javascript')                        
 
+@login_required_json
 def empty_cal(request):
     try:
         cal = request.user.calendars.filter()[0]

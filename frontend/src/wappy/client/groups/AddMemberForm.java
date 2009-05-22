@@ -21,6 +21,7 @@ import com.google.gwt.user.client.DeferredCommand;
 
 public class AddMemberForm extends LayoutContainer {
 	private Member member;
+	private Group group;
 	
 	private FormPanel fp = new FormPanel();
 	private TextField<String> usrField = new TextField<String>();
@@ -55,6 +56,7 @@ public class AddMemberForm extends LayoutContainer {
 				GroupsJSON jsonUtil = new GroupsJSON(value);            
                 if (jsonUtil.noErrors()) {
                 	member = GroupsJSON.getCreatedMember();
+                	group = grComboBox.getValue();
                 	collapse();
                 	DeferredCommand.addCommand(onMemberAdded);
 		         }
@@ -69,8 +71,8 @@ public class AddMemberForm extends LayoutContainer {
 	    	@Override
 	    	public void componentSelected(ButtonEvent ce) {
 	    		if (fp.isValid(false)) {
-	    			ServerComm.addMember("Add member", getUserName(),
-	    					getGroupName(), rh);
+	    			ServerComm.addMember("Add member", getGroupName(),
+	    					getUserName(),rh);
 	    		}
 	    	}
 	    }));
@@ -88,33 +90,43 @@ public class AddMemberForm extends LayoutContainer {
 	private String getUserName() {
 		return usrField.getValue();
 	}
-
+	
 	private String getGroupName() {
 		return grComboBox.getValue().getName();
 	}
-
-	protected void collapse() {
-		fp.collapse();
+	
+	public Group getGroup() {
+		return this.group;
 	}
-
+	
 	public Member getMember() {
 		return this.member;
 	}
-
+	
+	protected void collapse() {
+		fp.collapse();
+		usrField.setValue(null);
+		usrField.clearInvalid();
+		grComboBox.clearSelections();
+		
+	}
+	
 	public void expand() {
 		fp.expand();
 	}
-
+	
 	public boolean toggleCollapse() {
 		if (fp.isCollapsed()) {
-			fp.expand();
+			expand();
 			return true;
 		}
 		else {
-			fp.collapse();
+			collapse();
 			return false;
 		}
 	}
+	
+	
 
 	public void updateGroupsList(List<Group> groups) {
 		grStore.removeAll();

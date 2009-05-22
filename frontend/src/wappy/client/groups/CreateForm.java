@@ -71,7 +71,7 @@ public class CreateForm extends LayoutContainer {
 				GroupsJSON jsonUtil = new GroupsJSON(value);            
                 if (jsonUtil.noErrors()) {
 		            Info.display("", "New group created!");
-		            close();
+		            collapse();
 		            DeferredCommand.addCommand(onGroupCreated);
 		         }
 		        else {
@@ -96,7 +96,7 @@ public class CreateForm extends LayoutContainer {
 	    fp.addButton(new Button("Cancel", new SelectionListener<ButtonEvent>() {
 	    	@Override
 	    	public void componentSelected(ButtonEvent ce) {
-	    		close();
+	    		collapse();
 			}
 		}));
 
@@ -107,22 +107,22 @@ public class CreateForm extends LayoutContainer {
 		return this.group;
 	}
 	
-	private void close() {
+	private void collapse() {
+		fp.collapse();
 		grNameField.setValue(null);
 		grNameField.clearInvalid();
-		fp.collapse();
 	}
 	
-	public void open() {
+	public void expand() {
 		fp.expand();
 	}
 
 	public void toggleCollapse() {
 		if (fp.isCollapsed()) {
-			fp.expand();
+			expand();
 		}
 		else {
-			fp.collapse();
+			collapse();
 		}
 	}
 }

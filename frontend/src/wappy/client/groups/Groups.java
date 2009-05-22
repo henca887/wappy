@@ -11,18 +11,18 @@ import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.toolbar.SeparatorToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
 
 public class Groups extends LayoutContainer{
 	private CreateForm createForm;
 	private AddMemberForm addForm;
-	private GroupsView view = new GroupsView();
+	private GroupsView view;
 	private ContentPanel panel = new ContentPanel();
 	private List<Group> groups = new ArrayList<Group>();
 	
@@ -31,7 +31,7 @@ public class Groups extends LayoutContainer{
 		public void execute() {
 			Group group = createForm.getGroup();
 			groups.add(group);
-			view.update(group);
+			view.insert(group);
 		}
 		
 	};
@@ -39,22 +39,54 @@ public class Groups extends LayoutContainer{
 		@Override
 		public void execute() {
 			// TODO: Implement!
+			Group group = addForm.getGroup();
 			Member member = addForm.getMember();
+			view.insertMember(group, member);
 		}
 		
 	};
 	
+	private ResponseHandler removeHandler = new ResponseHandler() {
+		@Override
+		public void on200Response(JSONValue value) {
+			GroupsJSON jsonUtil = new GroupsJSON(value);            
+            if (jsonUtil.noErrors()) {
+				view.removeItem();
+            }
+    		else {
+    			MessageBox.alert("Remove", 
+    					jsonUtil.getErrorVal(), null);
+    		}
+		}
+	};
+	
+	private Command removeMember = new Command() {
+		@Override
+		public void execute() {
+			String group = view.getMembersGroupName();
+			String member = view.getMemberName();
+			ServerComm.removeMember("Groups", group, member, removeHandler);
+		}
+	};
+	
+	private Command removeGroup = new Command() {
+		@Override
+		public void execute() {
+			String groupName = view.getGroupName();
+			removeFromGroupsList(groupName);
+			ServerComm.removeGroup("Groups", groupName, removeHandler);
+		}
+	};
 	
 	public Groups() {
 		getGroups();
+		view = new GroupsView(removeMember, removeGroup);
 		createForm = new CreateForm(onGroupCreated);
 		addForm = new AddMemberForm(onMemberAdded);
 				
 		panel.setLayout(new FlowLayout());
-		panel.setHeading("Groups");
-		panel.setCollapsible(true);
-		
-		
+		panel.setHeaderVisible(false);
+		panel.setCollapsible(false);
 		
 		ToolBar toolBar = new ToolBar();
 		
@@ -83,6 +115,17 @@ public class Groups extends LayoutContainer{
 		add(panel);
 	}
 
+	private void removeFromGroupsList(String groupName) {
+		for (int i = 0; i < groups.size(); i++) {
+			Group group = groups.get(i);
+			if (group.getName() == groupName) {
+				groups.remove(group);
+				addForm.updateGroupsList(groups);
+				return;
+			}
+		}
+	}
+
 	private  void getGroups() {
 		ResponseHandler rh = new ResponseHandler() {
 			@Override
@@ -93,18 +136,14 @@ public class Groups extends LayoutContainer{
 					Info.display("DEBUG:Groups:getGroups: Success",
                     		"Groups have been retrieved!");
         			
-					view.update(groups);
+					view.insert(groups);
                 }
         		else {
         			Info.display("Groups", jsonUtil.getErrorVal());
         		}
-
 			}
 		};
 		ServerComm.getGroups("Groups", rh);
 	}
 
-	private void addMember(String userName) {
-		
-	}
 }

@@ -25,7 +25,8 @@ public class ServerComm {
 	private static final String URL_CREATE_GROUP = "/groups/create_group/";
 	private static final String URL_GET_GROUPS = "/groups/get_groups/";
 	private static final String URL_ADD_MEMBER = "/groups/add_member/";
-	
+	private static final String URL_REM_MEMBER = "/groups/rem_member/";
+	private static final String URL_REM_GROUP = "/groups/rem_group/";
 	
 	
 	private static void sendPostRequest(final String caller, String url,
@@ -119,11 +120,26 @@ public class ServerComm {
 		sendPostRequest(caller, URL_CREATE_GROUP, jsonArgs.toString(), rh);
 	}
 
-	public static void addMember(String caller, String usrName, String groupName,
+	public static void addMember(String caller, String group, String usr,
 			ResponseHandler rh) {
 		JSONObject jsonArgs = new JSONObject();
-    	jsonArgs.put("user_name", new JSONString(usrName));
-    	jsonArgs.put("group_name", new JSONString(usrName));
+		jsonArgs.put("group_name", new JSONString(group));
+		jsonArgs.put("user_name", new JSONString(usr));
     	sendPostRequest(caller, URL_ADD_MEMBER, jsonArgs.toString(), rh);
+	}
+
+	public static void removeMember(String caller, String group, String member,
+			ResponseHandler rh) {
+		JSONObject jsonArgs = new JSONObject();
+		jsonArgs.put("group_name", new JSONString(group));
+		jsonArgs.put("user_name", new JSONString(member));
+    	sendPostRequest(caller, URL_REM_MEMBER, jsonArgs.toString(), rh);
+	}
+
+	public static void removeGroup(String caller, String group,
+			ResponseHandler rh) {
+		JSONObject jsonArgs = new JSONObject();
+		jsonArgs.put("name", new JSONString(group));
+		sendPostRequest(caller, URL_REM_GROUP, jsonArgs.toString(), rh);
 	}
 }
