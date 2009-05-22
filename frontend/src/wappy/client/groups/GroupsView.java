@@ -19,6 +19,7 @@ public class GroupsView extends LayoutContainer{
 		setLayout(new FlowLayout());
 		
 		tree.getStyle().setLeafIconStyle("wappy-groups-member-icon");
+//		tree.getStyle().setItemStyle("wappy-groups-group-icon");
 		tree.setSelectionMode(SelectionMode.MULTI);
 		
 		Menu contextMenu = createContexMenu(); //new Menu();  
@@ -27,7 +28,11 @@ public class GroupsView extends LayoutContainer{
 		
 		TreeItem item = new TreeItem();
 		item.setText("Hej");
+		
 		tree.getRootItem().add(item);
+		TreeItem item2 = new TreeItem();
+		item2.setText("Hello");
+		item.add(item2);
 		
 		add(tree);
 	}
@@ -53,15 +58,19 @@ public class GroupsView extends LayoutContainer{
 	
 	public void update(Group group) {
 		TreeItem item = new TreeItem();
-		item.setText(group.getName());
-		List<Member> members = group.getMembers();
-		for (int m = 0; m < members.size(); m++) {
-			TreeItem child = new TreeItem();
-			String name = members.get(m).getName();
-			child.setText(name);
-			item.add(child);	// DEBUG: Blir nåt fel här
-		}
 		tree.getRootItem().add(item);
+		String grName = group.getName();
+		item.setText(grName);
+		List<Member> members = group.getMembers();
+		if(members != null) {
+			for (int m = 0; m < members.size(); m++) {
+				TreeItem child = new TreeItem();
+				String name = members.get(m).getName();
+				child.setText(name);
+				item.add(child);
+			}
+		}
+		
 	}
 	
 	public void update(List<Group> groups) {

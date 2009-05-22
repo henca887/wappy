@@ -36,6 +36,8 @@ def create_group(request):
 
 def get_group_members(gr, requester):
     members = gr.members.all().exclude(username=requester)
+    if members.count() == 0:
+        return None
     users = []
     for member in members:
         mship = Membership.objects.get(group=gr, user=member)

@@ -7,7 +7,7 @@ public class Member extends BaseModel{
 	public Member(String name, String mail, long joinDate, 
 			Boolean isOwner, Boolean isAdmin) {
 		set("name", name);
-		set("mail", mail);
+		set("email", mail);
 		set("joinDate", joinDate);
 		set("isOwner", isOwner);
 		set("isAdmin", isAdmin);
@@ -19,7 +19,7 @@ public class Member extends BaseModel{
 	}
 	
 	public String getMail() {
-		return get("mail");
+		return get("email");
 	}
 	
 	public Boolean isOwner() {

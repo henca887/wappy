@@ -7,9 +7,8 @@ import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.widget.Info;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
-import com.extjs.gxt.ui.client.widget.Window;
-import com.extjs.gxt.ui.client.widget.Window.CloseAction;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.Radio;
@@ -19,22 +18,15 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
 
-public class CreateForm {
+public class CreateForm extends LayoutContainer {
 	private Group group;
-	
-	private final Window w = new Window();
+
+	private final FormPanel fp = new FormPanel();
 	private final TextField<String> grNameField = new TextField<String>();
 	
 	public CreateForm(final Command onGroupCreated) {
-		
-		w.setCloseAction(CloseAction.CLOSE);
-		w.setHeading("Create new group");
-		w.setWidth(350);
-		w.setModal(true);
-		w.setBlinkModal(true);
-		
-		final FormPanel fp = new FormPanel();
 		fp.setHeaderVisible(false);
+		fp.collapse();
 		
 		
 		grNameField.setFieldLabel("Group name");
@@ -104,11 +96,11 @@ public class CreateForm {
 	    fp.addButton(new Button("Cancel", new SelectionListener<ButtonEvent>() {
 	    	@Override
 	    	public void componentSelected(ButtonEvent ce) {
-				w.close();
+	    		close();
 			}
 		}));
-	    
-	    w.add(fp);
+
+	    add(fp);
 	}
 
 	public Group getGroup() {
@@ -118,10 +110,19 @@ public class CreateForm {
 	private void close() {
 		grNameField.setValue(null);
 		grNameField.clearInvalid();
-		w.hide();
+		fp.collapse();
 	}
 	
 	public void open() {
-		w.show();
+		fp.expand();
+	}
+
+	public void toggleCollapse() {
+		if (fp.isCollapsed()) {
+			fp.expand();
+		}
+		else {
+			fp.collapse();
+		}
 	}
 }

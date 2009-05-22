@@ -71,6 +71,7 @@ public class GroupsJSON {
 		long timestamp = wrapper.get("join_date").longValue()*1000;
 		Boolean isOwner = toBoolean(wrapper.get("is_owner"));
 		Boolean isAdmin = toBoolean(wrapper.get("is_admin"));
-		return new Member(name, mail, timestamp, isOwner, isAdmin);
+		Member member = new Member(name, mail, timestamp, isOwner, isAdmin);
+		return member;
 	}
 }

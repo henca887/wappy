@@ -13,17 +13,19 @@ import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
+import com.extjs.gxt.ui.client.widget.toolbar.SeparatorToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Command;
 
 public class Groups extends LayoutContainer{
 	private CreateForm createForm;
+	private AddMemberForm addForm;
+	
 	private GroupsView view = new GroupsView();
 	
 	private ContentPanel panel = new ContentPanel();
 	private List<Group> groups = new ArrayList<Group>();
-	
 	
 	private Command onGroupCreated = new Command() {
 		@Override
@@ -34,9 +36,19 @@ public class Groups extends LayoutContainer{
 		}
 		
 	};
+	private Command onMemberAdded = new Command() {
+		@Override
+		public void execute() {
+			// TODO: Implement!
+			Member member = addForm.getMember();
+		}
+		
+	};
+	
 	
 	public Groups() {
 		createForm = new CreateForm(onGroupCreated);
+		addForm = new AddMemberForm(onMemberAdded );
 		
 		panel.setLayout(new FlowLayout());
 		panel.setHeading("Groups");
@@ -49,20 +61,26 @@ public class Groups extends LayoutContainer{
 		Button createBtn = new Button("Create group", new SelectionListener<ButtonEvent>() {
 			@Override
 			public void componentSelected(ButtonEvent ce) {
-				createForm.open();
+				createForm.toggleCollapse();
 			}
 		});
 		toolBar.add(createBtn);
-		
-		Button debugBtn = new Button("Debug:getgroups", new SelectionListener<ButtonEvent>() {
+		toolBar.add(new SeparatorToolItem());
+		Button addBtn = new Button("Add user", new SelectionListener<ButtonEvent>() {
 			@Override
 			public void componentSelected(ButtonEvent ce) {
-				getGroups();
+				addForm.toggleCollapse();
 			}
 		});
-		toolBar.add(debugBtn);
+		toolBar.add(addBtn);
+		
+		
+		
+		
 		
 		panel.add(toolBar);
+		panel.add(createForm);
+		panel.add(addForm);
 		panel.add(view);
 		add(panel);
 		
@@ -89,10 +107,7 @@ public class Groups extends LayoutContainer{
 		ServerComm.getGroups("Groups", rh);
 	}
 
-//	public void createGroup() {
-//	}
-//	
-//	public void addMember(String userName) {
-//		
-//	}
+	public void addMember(String userName) {
+		
+	}
 }

@@ -1,4 +1,9 @@
-/** Calendar style rules. */
+/** Groups style rules. */
+
+.wappy-groups-group-icon {
+	background-image: url(images/wappy/im16x16.png) !important;
+	background-repeat:no-repeat;	
+}
 
 .wappy-groups-member-icon {
     background-image: url(images/wappy/fam/user.gif) !important;
