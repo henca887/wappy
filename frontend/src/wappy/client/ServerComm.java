@@ -2,6 +2,7 @@ package wappy.client;
 
 import wappy.client.calendar.Appointment;
 import wappy.client.groups.Group;
+import wappy.client.groups.Member;
 
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.google.gwt.http.client.Request;
@@ -120,11 +121,11 @@ public class ServerComm {
 		sendPostRequest(caller, URL_CREATE_GROUP, jsonArgs.toString(), rh);
 	}
 
-	public static void addMember(String caller, String group, String usr,
+	public static void addMember(String caller, String grName, Member member, 
 			ResponseHandler rh) {
 		JSONObject jsonArgs = new JSONObject();
-		jsonArgs.put("group_name", new JSONString(group));
-		jsonArgs.put("user_name", new JSONString(usr));
+		jsonArgs.put("group_name", new JSONString(grName));
+		jsonArgs.put("user_name", new JSONString(member.getName()));
     	sendPostRequest(caller, URL_ADD_MEMBER, jsonArgs.toString(), rh);
 	}
 
