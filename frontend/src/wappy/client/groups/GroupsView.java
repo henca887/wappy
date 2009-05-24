@@ -20,7 +20,7 @@ public class GroupsView extends LayoutContainer{
 	private Command removeGroup;
 
 	private TreeItem selectedItem;
-	
+
 	public GroupsView(Command removeMember, Command removeGroup) {
 		setLayout(new FlowLayout());
 		this.removeMember = removeMember;
@@ -36,7 +36,7 @@ public class GroupsView extends LayoutContainer{
 		
 		add(tree);
 	}
-	
+
 	private Menu createContexMenu() {
 		Menu menu = new Menu();
 		menu.setWidth(130);  
@@ -59,23 +59,23 @@ public class GroupsView extends LayoutContainer{
 	    menu.add(remove);
 		return menu;  
 	}
-	
+
 	public String getMemberName() {
 		return selectedItem.getText();
 	}
-	
+
 	public String getMembersGroupName() {
 		return selectedItem.getParentItem().getText();
 	}
-	
+
 	public String getGroupName() {
 		return selectedItem.getText();
 	}
-	
+
 	public void removeItem() {
 		selectedItem.getParentItem().remove(selectedItem);
 	}
-	
+
 	public void insert(Group group) {
 		TreeItem parent = new TreeItem();
 		parent.setLeaf(false);
@@ -96,7 +96,7 @@ public class GroupsView extends LayoutContainer{
 		}
 		
 	}
-	
+
 	public void insert(List<Group> groups) {
 		for (int g = 0; g < groups.size(); g++) {
 			insert(groups.get(g));

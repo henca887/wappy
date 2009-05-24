@@ -6,11 +6,13 @@ from backend.mail.utils import ensure_private_message_account_exists
 from backend.mail.utils import create_mail_account
 from backend.mail.imap import IMAP, IMAPSession
 from backend.mail.pm import PM
+from backend.mail.smtp import SMTP
 
 
 PROTOCOL_HANDLERS = {
     'imap': IMAP(),
-    'pm': PM()
+    'pm': PM(),
+    'smtp': SMTP()
 }
 
 

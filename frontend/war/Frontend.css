@@ -41,6 +41,11 @@
 	background-repeat:no-repeat;
 }
 
+.wappy-startmenu-bookmarks {
+	background-image: url(images/wappy/fam/book.png) !important;
+	background-repeat:no-repeat;
+}
+
 .wappy-startmenu-logout {
 	background-image: url(images/wappy/logout.gif) !important;
 	background-repeat:no-repeat;

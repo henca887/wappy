@@ -77,6 +77,8 @@ INSTALLED_APPS = (
     'backend.mail',
     'backend.wcalendar',
     'backend.groups',
+    'backend.shareables',
+    'backend.bookmarks',
 )
 
 LOGIN_REDIRECT_URL = '/frontend/Frontend.html'

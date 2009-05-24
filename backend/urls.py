@@ -13,4 +13,6 @@ urlpatterns = patterns('',
     (r'^groups/', include('backend.groups.urls')),
     (r'^mail/', include('backend.mail.urls')),
     (r'^wcalendar/', include('backend.wcalendar.urls')),
+    (r'^shareables/', include('backend.shareables.urls')),
+    (r'^bookmarks/', include('backend.bookmarks.urls')),
 )

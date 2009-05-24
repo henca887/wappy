@@ -3,6 +3,7 @@ package wappy.client;
 import wappy.client.calendar.Calendar;
 import wappy.client.groups.Groups;
 import wappy.client.mail.MailClient;
+import wappy.client.bookmarks.Bookmarks;
 import wappy.client.desktop.Desktop;
 import wappy.client.desktop.Shortcut;
 import wappy.client.desktop.StartMenu;
@@ -25,6 +26,7 @@ public class Frontend implements EntryPoint {
 	private Window mailWindow = new Window();
     private Window calendarWindow = new Window();
     private Window groupsWindow = new Window();
+    private Window bookmarksWindow = new Window();
     private HorizontalPanel toolBar = new HorizontalPanel();
 
     private Calendar calendar = new Calendar();
@@ -54,6 +56,14 @@ public class Frontend implements EntryPoint {
         groupsWindow.setMinimizable(true);
         groupsWindow.setMaximizable(true);
         groupsWindow.add(new Groups());
+
+        bookmarksWindow.setSize(300, 500);
+        bookmarksWindow.setPlain(true);  
+        bookmarksWindow.setHeading("Bookmarks");  
+        bookmarksWindow.setLayout(new FitLayout());  
+        bookmarksWindow.setMinimizable(true);
+        bookmarksWindow.setMaximizable(true);
+        bookmarksWindow.add(new Bookmarks());
 
         initDesktopView();
         //initSimpleView();
@@ -153,6 +163,13 @@ public class Frontend implements EntryPoint {
 		groupsMenuItem.setIconStyle("wappy-startmenu-groups");
 		groupsMenuItem.addSelectionListener(menuListener);
 		startMenu.add(groupsMenuItem);
+
+		final MenuItem bookmarksMenuItem = new MenuItem("Bookmarks");
+		bookmarksMenuItem.setData("window", bookmarksWindow);
+		bookmarksMenuItem.setTitle("Open bookmark viewer");
+		bookmarksMenuItem.setIconStyle("wappy-startmenu-bookmarks");
+		bookmarksMenuItem.addSelectionListener(menuListener);
+		startMenu.add(bookmarksMenuItem);
 
 		MenuItem logout = new MenuItem("Logout",
         new SelectionListener<MenuEvent>() {
