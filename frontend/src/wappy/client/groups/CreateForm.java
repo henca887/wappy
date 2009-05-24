@@ -1,5 +1,7 @@
 package wappy.client.groups;
 
+import java.util.ArrayList;
+
 import wappy.client.ResponseHandler;
 import wappy.client.ServerComm;
 
@@ -86,7 +88,7 @@ public class CreateForm extends LayoutContainer {
 	    		if (fp.isValid(false)) {
 	    			group = new Group(grNameField.getValue(),
 	    					publicRadio.getValue(), allowReqRadio.getValue(),
-	    					null);
+	    					new ArrayList<Member>());
 	    			ServerComm.createGroup("Groups", group, rh);
 	    		}
 	    	}

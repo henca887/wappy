@@ -5,20 +5,20 @@ import java.util.List;
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
 
 public class Group extends BaseTreeModel {
-	private static int ID = 0;
+//	private static int ID = 0;
 	
 	public Group(String name, Boolean isPublic, Boolean isRequestsAllowed,
 			List<Member> members) {
-		set("id", ID++);
+//		set("id", ID++);
 		set("name", name);
 		set("isPublic", isPublic);
 		set("isRequestsAllowed", isRequestsAllowed);
 		set("members", members);
 	}
 	
-	public Integer getId() {
-		return (Integer) get("id");
-	}
+//	public Integer getId() {
+//		return (Integer) get("id");
+//	}
 	
 	public String getName() {
 		return get("name");

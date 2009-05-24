@@ -40,7 +40,6 @@ public class Groups extends LayoutContainer{
 		public void execute() {
 			Group group = addForm.getGroup();
 			Member member = addForm.getMember();
-			// TODO: Is needed? does what it should?
 			groups.get(groups.indexOf(group)).insertMember(member);
 			view.insertMember(group, member);
 		}

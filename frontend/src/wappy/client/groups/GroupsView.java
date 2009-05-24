@@ -81,9 +81,9 @@ public class GroupsView extends LayoutContainer{
 		parent.setLeaf(false);
 		String grName = group.getName();
 		parent.setId(grName);
-		parent.setText(grName);
-		tree.getRootItem().add(parent);
 		
+		tree.getRootItem().add(parent);
+		parent.setText(grName);
 		List<Member> members = group.getMembers();
 		if(members != null) {
 			for (int m = 0; m < members.size(); m++) {
@@ -110,5 +110,6 @@ public class GroupsView extends LayoutContainer{
 		child.setText(mName);
 		child.setId(mName);
 		parent.add(child);
+		tree.expandPath(child.getPath());
 	}
 }
