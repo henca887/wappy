@@ -9,3 +9,14 @@
     background-image: url(images/wappy/fam/user.gif) !important;
 	background-repeat:no-repeat;
 }
+
+
+.wappy-groups-admin-icon {
+    background-image: url(images/wappy/admin.gif) !important;
+	background-repeat:no-repeat;
+}
+
+.wappy-groups-owner-icon {
+    background-image: url(images/wappy/owner.gif) !important;
+	background-repeat:no-repeat;
+}

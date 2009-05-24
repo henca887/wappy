@@ -7,10 +7,12 @@ import com.extjs.gxt.ui.client.data.BaseTreeModel;
 public class Group extends BaseTreeModel {
 //	private static int ID = 0;
 	
-	public Group(String name, Boolean isPublic, Boolean isRequestsAllowed,
-			List<Member> members) {
+	public Group(String name, Boolean isOwner, Boolean isAdmin, 
+			Boolean isPublic, Boolean isRequestsAllowed,List<Member> members) {
 //		set("id", ID++);
 		set("name", name);
+		set("isOwner", isOwner);
+		set("isAdmin", isAdmin);
 		set("isPublic", isPublic);
 		set("isRequestsAllowed", isRequestsAllowed);
 		set("members", members);
@@ -22,6 +24,14 @@ public class Group extends BaseTreeModel {
 	
 	public String getName() {
 		return get("name");
+	}
+	
+	public Boolean isAdmin() {
+		return get("isAdmin");
+	}
+	
+	public Boolean isOwner() {
+		return get("isOwner");
 	}
 	
 	public Boolean isPublic() {

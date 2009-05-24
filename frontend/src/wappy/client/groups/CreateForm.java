@@ -86,7 +86,7 @@ public class CreateForm extends LayoutContainer {
 	    	@Override
 	    	public void componentSelected(ButtonEvent ce) {
 	    		if (fp.isValid(false)) {
-	    			group = new Group(grNameField.getValue(),
+	    			group = new Group(grNameField.getValue(), true, true,
 	    					publicRadio.getValue(), allowReqRadio.getValue(),
 	    					new ArrayList<Member>());
 	    			ServerComm.createGroup("Groups", group, rh);

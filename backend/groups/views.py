@@ -69,7 +69,10 @@ def get_groups(request):
     else:
         result = []
         for gr in groups:
+            mship = Membership.objects.get(group=gr, user=request.user)
             group = {'name': gr.name,
+                     'is_owner': mship.is_owner,
+                     'is_admin': mship.is_admin,
                      'is_public': gr.is_public,
                      'requests_allowed': gr.requests_allowed}
             members = get_group_members(gr, request.user.username)

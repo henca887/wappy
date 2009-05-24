@@ -30,7 +30,7 @@ public class GroupsView extends LayoutContainer{
 		tree.getStyle().setItemStyle("wappy-groups-group-icon");
 		tree.setSelectionMode(SelectionMode.MULTI);
 		
-		Menu contextMenu = createContexMenu(); //new Menu();  
+		Menu contextMenu = createContexMenu();
 		
 		tree.setContextMenu(contextMenu);
 		
@@ -76,6 +76,21 @@ public class GroupsView extends LayoutContainer{
 		selectedItem.getParentItem().remove(selectedItem);
 	}
 
+	private TreeItem insertMember(TreeItem parent, Member member) {
+		TreeItem child = new TreeItem();
+		String name = member.getName();
+		child.setText(name);
+		child.setId(name);
+		parent.add(child);
+		if (member.isOwner()) {
+			tree.getItemById(name).setStyleName("wappy-groups-owner-icon");
+		}
+		else if (member.isAdmin()) {
+			tree.getItemById(name).setStyleName("wappy-groups-admin-icon");
+		}
+		return child;
+	}
+
 	public void insert(Group group) {
 		TreeItem parent = new TreeItem();
 		parent.setLeaf(false);
@@ -84,14 +99,16 @@ public class GroupsView extends LayoutContainer{
 		
 		tree.getRootItem().add(parent);
 		parent.setText(grName);
+		if (group.isOwner()) {
+			tree.getItemById(grName).setStyleName("wappy-groups-owner-icon");
+		}
+		else if (group.isAdmin()) {
+			tree.getItemById(grName).setStyleName("wappy-groups-admin-icon");
+		}
 		List<Member> members = group.getMembers();
 		if(members != null) {
 			for (int m = 0; m < members.size(); m++) {
-				TreeItem child = new TreeItem();
-				String mName = members.get(m).getName();
-				child.setText(mName);
-				child.setId(mName);
-				parent.add(child);
+				insertMember(parent, members.get(m));
 			}
 		}
 		
@@ -102,14 +119,10 @@ public class GroupsView extends LayoutContainer{
 			insert(groups.get(g));
 		}
 	}
-
-	public void insertMember(Group group, Member member) {
+	
+	public void insertNewMember(Group group, Member member) {
 		TreeItem parent = tree.getItemById(group.getName());
-		TreeItem child = new TreeItem();
-		String mName = member.getName();
-		child.setText(mName);
-		child.setId(mName);
-		parent.add(child);
+		TreeItem child = insertMember(parent, member);
 		tree.expandPath(child.getPath());
 	}
 }

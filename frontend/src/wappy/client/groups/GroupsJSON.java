@@ -36,6 +36,8 @@ public class GroupsJSON {
 		for (int i = 0; i < result.size(); i++) {
         	JSONWrapper groupWrapper = result.get(i).get("group");
 			String name = groupWrapper.get("name").stringValue();
+			Boolean isAdmin = toBoolean(groupWrapper.get("is_admin"));
+			Boolean isOwner = toBoolean(groupWrapper.get("is_owner"));
 			Boolean isPublic = toBoolean(groupWrapper.get("is_public"));
     		Boolean isRequestsAllowed = 
     			toBoolean(groupWrapper.get("requests_allowed"));
@@ -48,8 +50,8 @@ public class GroupsJSON {
     		else {
     			members = null;
     		}
-        	Group group = new Group(name, isPublic, isRequestsAllowed,
-					members);
+        	Group group = new Group(name, isOwner, isAdmin, isPublic,
+        			isRequestsAllowed, members);
         	groups.add(group);
         }
 		return groups;

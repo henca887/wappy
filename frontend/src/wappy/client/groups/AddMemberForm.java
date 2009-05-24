@@ -1,5 +1,6 @@
 package wappy.client.groups;
 
+import java.util.Date;
 import java.util.List;
 
 import wappy.client.ResponseHandler;
@@ -14,6 +15,8 @@ import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
+import com.extjs.gxt.ui.client.widget.form.Radio;
+import com.extjs.gxt.ui.client.widget.form.RadioGroup;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Command;
@@ -47,9 +50,22 @@ public class AddMemberForm extends LayoutContainer {
 		grComboBox.setValueField("name");
 		grComboBox.setAllowBlank(false);
 		grComboBox.setForceSelection(true);
-		
 		fp.add(grComboBox);
 		
+		final Radio regularRadio = new Radio();  
+		regularRadio.setBoxLabel("Regular");  
+		regularRadio.setValue(true);
+		
+	    Radio adminRadio = new Radio();  
+	    adminRadio.setBoxLabel("Admin");  
+	  
+	    RadioGroup radioGroup = new RadioGroup();  
+	    radioGroup.setFieldLabel("As");
+	    radioGroup.setTitle("Give the new member its permission level");
+	    radioGroup.add(regularRadio);  
+	    radioGroup.add(adminRadio);
+	    fp.add(radioGroup);
+	    
 		final ResponseHandler rh = new ResponseHandler() {
 	    	@Override
 	    	public void on200Response(JSONValue value) {
@@ -71,8 +87,9 @@ public class AddMemberForm extends LayoutContainer {
 	    	@Override
 	    	public void componentSelected(ButtonEvent ce) {
 	    		if (fp.isValid(false)) {
-	    			ServerComm.addMember("Add member", getGroupName(),
-	    					getUserName(),rh);
+	    			Member member = new Member(getUserName(), "", 0,
+	    					false, false);
+	    			ServerComm.addMember("Add member", getGroupName(), member, rh);
 	    		}
 	    	}
 	    }));
@@ -108,7 +125,7 @@ public class AddMemberForm extends LayoutContainer {
 		usrField.setValue(null);
 		usrField.clearInvalid();
 		grComboBox.clearSelections();
-		
+		grComboBox.clearInvalid();
 	}
 	
 	public void expand() {
