@@ -48,7 +48,7 @@ public class GroupsJSON {
     			 members = getMembers(membersWrapper);
     		}
     		else {
-    			members = null;
+    			members = new ArrayList<Member>();
     		}
         	Group group = new Group(name, isOwner, isAdmin, isPublic,
         			isRequestsAllowed, members);

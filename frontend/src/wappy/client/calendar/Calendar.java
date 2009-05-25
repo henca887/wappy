@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import wappy.client.ResponseHandler;
-import wappy.client.ServerComm;
 import wappy.client.calculator.Calculator;
 
 import com.extjs.gxt.ui.client.event.ButtonEvent;
@@ -157,6 +156,19 @@ public class Calendar extends LayoutContainer {
 		return menu;
 	}
 
+//	private void errorAlert() {
+//		MessageBox.alert("Calendar", "Request error!", null);
+//	}
+//	
+//	private void failureAlert() {
+//		MessageBox.alert("Calendar", "HTTP error!", null);
+//	}
+//	
+//	private void exceptionAlert() {
+//		MessageBox.alert("Calendar", "Request exception raised!", null);
+//	}
+	
+	
 	private List<Appointment> samples = new ArrayList<Appointment>();
 	private void addSampleApps(final List<Appointment> samples) {
 		if (samples.isEmpty()) {
@@ -169,7 +181,7 @@ public class Calendar extends LayoutContainer {
 		final Appointment sample = samples.get(0);
 		ResponseHandler rh = new ResponseHandler() {
 			@Override
-			public void on200Response(JSONValue value) {
+			public void onSuccess(JSONValue value) {
 				CalendarJSON jsonUtil = new CalendarJSON(value);            
                 if (jsonUtil.noErrors()) {
                     sample.setWeekNr(jsonUtil.getWeekNr());
@@ -182,13 +194,13 @@ public class Calendar extends LayoutContainer {
                 }
 			}
 		};
-		ServerComm.addAppointment("Calendar", sample, rh);
+		CalendarComm.addAppointment(sample, rh);
 	}
 	
 	private void getCurrentCalendar() {
 		ResponseHandler rh = new ResponseHandler() {
 			@Override
-			public void on200Response(JSONValue value) {
+			public void onSuccess(JSONValue value) {
 				CalendarJSON jsonUtil = new CalendarJSON(value);            
                 if (jsonUtil.noErrors()) {
         			Info.display("Calendar",
@@ -201,7 +213,7 @@ public class Calendar extends LayoutContainer {
         		}
 			}
 		};
-		ServerComm.getCurrentCalendar("Calendar", rh);
+		CalendarComm.getCurrentCalendar(rh);
 	}
 
 	private void removeAppointment() {
@@ -214,10 +226,11 @@ public class Calendar extends LayoutContainer {
 	private void removeAppointment(final Appointment app) {
 		ResponseHandler rh = new ResponseHandler() {
 			@Override
-			public void on200Response(JSONValue value) {
+			public void onSuccess(JSONValue value) {
 				CalendarJSON jsonUtil = new CalendarJSON(value);            
                 if (jsonUtil.noErrors()) {
-                    Info.display("", "Selected Appointment was removed from the calendar!");
+                    Info.display("", "Selected Appointment was removed from " +
+                    		"the calendar!");
                     appointments.remove(app);
                     DeferredCommand.addCommand(new Command() {
                     	@Override
@@ -231,14 +244,14 @@ public class Calendar extends LayoutContainer {
                 }
 			}
 		};
-		ServerComm.removeAppointment("BookingForm", app, rh);
+		CalendarComm.removeAppointment(app, rh);
 	}
 	
 	// TODO: Add confirmation dialog
 	private void emptyCalendar() {
 		ResponseHandler rh = new ResponseHandler() {
 			@Override
-			public void on200Response(JSONValue value) {
+			public void onSuccess(JSONValue value) {
 				CalendarJSON jsonUtil = new CalendarJSON(value);            
                 if (jsonUtil.noErrors()) {
         			Info.display("Calendar",
@@ -251,7 +264,7 @@ public class Calendar extends LayoutContainer {
         		}
 			}
 		};
-		ServerComm.emptyCalendar("Calendar", rh);
+		CalendarComm.emptyCalendar(rh);
 	}
 	
 	public boolean isGridView() {

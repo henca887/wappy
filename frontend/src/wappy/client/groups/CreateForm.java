@@ -3,7 +3,6 @@ package wappy.client.groups;
 import java.util.ArrayList;
 
 import wappy.client.ResponseHandler;
-import wappy.client.ServerComm;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
@@ -25,6 +24,10 @@ public class CreateForm extends LayoutContainer {
 
 	private final FormPanel fp = new FormPanel();
 	private final TextField<String> grNameField = new TextField<String>();
+	private Radio publicRadio = new Radio();
+	private Radio privateRadio = new Radio();
+	private Radio allowReqRadio = new Radio();
+	private Radio denyReqRadio = new Radio();
 	
 	public CreateForm(final Command onGroupCreated) {
 		fp.setHeaderVisible(false);
@@ -39,11 +42,9 @@ public class CreateForm extends LayoutContainer {
 		grNameField.setValidationDelay(300);
 		fp.add(grNameField);
 		
-		final Radio publicRadio = new Radio();  
 		publicRadio.setBoxLabel("Public");  
 		publicRadio.setValue(true);
 		
-	    Radio privateRadio = new Radio();  
 	    privateRadio.setBoxLabel("Private");  
 	  
 	    RadioGroup radioGroup = new RadioGroup();  
@@ -52,11 +53,9 @@ public class CreateForm extends LayoutContainer {
 	    radioGroup.add(privateRadio);
 	    fp.add(radioGroup); 
 	    
-	    final Radio allowReqRadio = new Radio();
 	    allowReqRadio.setBoxLabel("Yes");
 	    allowReqRadio.setValue(true);
 	    
-	    Radio denyReqRadio = new Radio();
 	    denyReqRadio.setBoxLabel("No");
 	    
 	    radioGroup = new RadioGroup();
@@ -69,7 +68,7 @@ public class CreateForm extends LayoutContainer {
 	    
 	    final ResponseHandler rh = new ResponseHandler() {
 	    	@Override
-	    	public void on200Response(JSONValue value) {
+	    	public void onSuccess(JSONValue value) {
 				GroupsJSON jsonUtil = new GroupsJSON(value);            
                 if (jsonUtil.noErrors()) {
 		            Info.display("", "New group created!");
@@ -86,10 +85,10 @@ public class CreateForm extends LayoutContainer {
 	    	@Override
 	    	public void componentSelected(ButtonEvent ce) {
 	    		if (fp.isValid(false)) {
-	    			group = new Group(grNameField.getValue(), true, true,
-	    					publicRadio.getValue(), allowReqRadio.getValue(),
+	    			group = new Group(getName(), true, true,
+	    					isPublic(), isRequestsAllowed(),
 	    					new ArrayList<Member>());
-	    			ServerComm.createGroup("Groups", group, rh);
+	    			GroupsComm.createGroup(group, rh);
 	    		}
 	    	}
 	    }));
@@ -103,6 +102,18 @@ public class CreateForm extends LayoutContainer {
 		}));
 
 	    add(fp);
+	}
+
+	protected Boolean isRequestsAllowed() {
+		return allowReqRadio.getValue();
+	}
+
+	private Boolean isPublic() {
+		return publicRadio.getValue();
+	}
+
+	private String getName() {
+		return grNameField.getValue();
 	}
 
 	public Group getGroup() {

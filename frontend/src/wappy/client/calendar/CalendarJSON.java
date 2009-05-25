@@ -28,10 +28,6 @@ public class CalendarJSON {
 		return wrapper.get("result");
 	}
 
-	private Boolean toBoolean(JSONWrapper wrapper) {
-		return wrapper.getValue().isBoolean().booleanValue();
-	}
-
 	public Long getWeekNr() {
 		return wrapper.get("week_nr").longValue();
 	}

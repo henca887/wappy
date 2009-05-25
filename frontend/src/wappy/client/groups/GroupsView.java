@@ -27,7 +27,8 @@ public class GroupsView extends LayoutContainer{
 		this.removeGroup = removeGroup;
 
 		tree.getStyle().setLeafIconStyle("wappy-groups-member-icon");
-		tree.getStyle().setItemStyle("wappy-groups-group-icon");
+//		tree.getStyle().setItemStyle("wappy-groups-group-icon");
+		
 		tree.setSelectionMode(SelectionMode.MULTI);
 		
 		Menu contextMenu = createContexMenu();
@@ -78,15 +79,19 @@ public class GroupsView extends LayoutContainer{
 
 	private TreeItem insertMember(TreeItem parent, Member member) {
 		TreeItem child = new TreeItem();
-		String name = member.getName();
-		child.setText(name);
-		child.setId(name);
+		String cName = member.getName();
+		String pId = parent.getId();
+		String cId = pId + cName;
+		child.setText(cName);
+		child.setId(cId);
 		parent.add(child);
 		if (member.isOwner()) {
-			tree.getItemById(name).setStyleName("wappy-groups-owner-icon");
+//			tree.getItemById(cId).setStyleName("wappy-groups-owner-icon");
+			tree.getItemById(cId).setIconStyle("wappy-groups-owner-icon");
 		}
 		else if (member.isAdmin()) {
-			tree.getItemById(name).setStyleName("wappy-groups-admin-icon");
+//			tree.getItemById(cId).setStyleName("wappy-groups-admin-icon");
+			tree.getItemById(cId).setIconStyle("wappy-groups-admin-icon");
 		}
 		return child;
 	}
@@ -100,10 +105,15 @@ public class GroupsView extends LayoutContainer{
 		tree.getRootItem().add(parent);
 		parent.setText(grName);
 		if (group.isOwner()) {
-			tree.getItemById(grName).setStyleName("wappy-groups-owner-icon");
+//			tree.getItemById(grName).setStyleName("wappy-groups-owner-icon");
+			tree.getItemById(grName).setIconStyle("wappy-groups-owner-icon");
 		}
 		else if (group.isAdmin()) {
-			tree.getItemById(grName).setStyleName("wappy-groups-admin-icon");
+//			tree.getItemById(grName).setStyleName("wappy-groups-admin-icon");
+			tree.getItemById(grName).setIconStyle("wappy-groups-admin-icon");
+		}
+		else {
+			tree.getItemById(grName).setIconStyle("wappy-groups-group-icon");
 		}
 		List<Member> members = group.getMembers();
 		if(members != null) {

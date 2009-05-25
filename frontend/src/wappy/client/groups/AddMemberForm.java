@@ -1,10 +1,8 @@
 package wappy.client.groups;
 
-import java.util.Date;
 import java.util.List;
 
 import wappy.client.ResponseHandler;
-import wappy.client.ServerComm;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
@@ -30,6 +28,8 @@ public class AddMemberForm extends LayoutContainer {
 	private TextField<String> usrField = new TextField<String>();
 	private ListStore<Group> grStore = new ListStore<Group>();
 	private ComboBox<Group> grComboBox = new ComboBox<Group>();
+	private Radio regularRadio = new Radio();
+	private Radio adminRadio = new Radio();
 	
 	public AddMemberForm(final Command onMemberAdded) {
 		fp.setHeaderVisible(false);
@@ -52,11 +52,10 @@ public class AddMemberForm extends LayoutContainer {
 		grComboBox.setForceSelection(true);
 		fp.add(grComboBox);
 		
-		final Radio regularRadio = new Radio();  
 		regularRadio.setBoxLabel("Regular");  
 		regularRadio.setValue(true);
 		
-	    Radio adminRadio = new Radio();  
+	      
 	    adminRadio.setBoxLabel("Admin");  
 	  
 	    RadioGroup radioGroup = new RadioGroup();  
@@ -68,7 +67,7 @@ public class AddMemberForm extends LayoutContainer {
 	    
 		final ResponseHandler rh = new ResponseHandler() {
 	    	@Override
-	    	public void on200Response(JSONValue value) {
+	    	public void onSuccess(JSONValue value) {
 				GroupsJSON jsonUtil = new GroupsJSON(value);            
                 if (jsonUtil.noErrors()) {
                 	member = GroupsJSON.getCreatedMember();
@@ -87,9 +86,8 @@ public class AddMemberForm extends LayoutContainer {
 	    	@Override
 	    	public void componentSelected(ButtonEvent ce) {
 	    		if (fp.isValid(false)) {
-	    			Member member = new Member(getUserName(), "", 0,
-	    					false, false);
-	    			ServerComm.addMember("Add member", getGroupName(), member, rh);
+	    			GroupsComm.addMember(getGroupName(), getUserName(),
+	    					isAdmin(), rh);
 	    		}
 	    	}
 	    }));
@@ -112,6 +110,10 @@ public class AddMemberForm extends LayoutContainer {
 		return grComboBox.getValue().getName();
 	}
 	
+	private Boolean isAdmin() {
+		return adminRadio.getValue();
+	}
+	
 	public Group getGroup() {
 		return this.group;
 	}
@@ -120,15 +122,16 @@ public class AddMemberForm extends LayoutContainer {
 		return this.member;
 	}
 	
-	protected void collapse() {
+	private void collapse() {
 		fp.collapse();
 		usrField.setValue(null);
 		usrField.clearInvalid();
 		grComboBox.clearSelections();
 		grComboBox.clearInvalid();
+		regularRadio.setValue(true);
 	}
 	
-	public void expand() {
+	private void expand() {
 		fp.expand();
 	}
 	
@@ -143,12 +146,9 @@ public class AddMemberForm extends LayoutContainer {
 		}
 	}
 	
-	
-
 	public void updateGroupsList(List<Group> groups) {
 		grStore.removeAll();
 		grStore.add(groups);
-		
 	}
 
 }

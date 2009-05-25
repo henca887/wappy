@@ -3,7 +3,6 @@ package wappy.client.calendar;
 import java.util.Date;
 
 import wappy.client.ResponseHandler;
-import wappy.client.ServerComm;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
@@ -144,7 +143,7 @@ public class BookingForm {
 	private void saveAppointment(Appointment app) {
 		ResponseHandler rh = new ResponseHandler() {
 			@Override
-			public void on200Response(JSONValue value) {
+			public void onSuccess(JSONValue value) {
 				CalendarJSON jsonUtil = new CalendarJSON(value);            
                 if (jsonUtil.noErrors()) {
 		            long weekNr = jsonUtil.getWeekNr();
@@ -158,7 +157,7 @@ public class BookingForm {
 		        }
 			}
 		};
-		ServerComm.addAppointment("BookingForm", app, rh);
+		CalendarComm.addAppointment(app, rh);
 	}
 
 	private void close() {

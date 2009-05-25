@@ -107,9 +107,15 @@ def add_member(request):
     kwargs = simplejson.loads(request.raw_post_data)
     gr_name = kwargs['group_name']
     user_name = kwargs['user_name']
+    is_adm = kwargs['is_admin']
+    
+    gr = request.user.wappy_groups.get(name=gr_name)
+    if not request.user.memberships.get(group=gr).is_admin:
+        return json_http_response({'error': 'Only an admin can add members!',
+                                   'result': None})
     try:
         usr = User.objects.get(username=user_name)
-    except:
+    except User.DoesNotExist:
         response_dict = {'error': 'User does not exist!',
                          'result': None}
         return json_http_response(response_dict)
@@ -119,7 +125,7 @@ def add_member(request):
             response_dict = {'error': 'User is already a member!',
                              'result': None}
             return json_http_response(response_dict)
-        mship = Membership(user=usr, group=gr)
+        mship = Membership(user=usr, group=gr, is_admin=is_adm)
         mship.save()
         timestamp = get_timestamp(mship.join_date.timetuple())
         member = {'name': user_name,
