@@ -1,16 +1,14 @@
 package wappy.client;
 
-import wappy.client.calendar.Calendar;
-import wappy.client.groups.Groups;
-import wappy.client.mail.MailClient;
 import wappy.client.bookmarks.Bookmarks;
+import wappy.client.calendar.Calendar;
 import wappy.client.desktop.Desktop;
-import wappy.client.desktop.Shortcut;
 import wappy.client.desktop.StartMenu;
 import wappy.client.desktop.TaskBar;
+import wappy.client.groups.Groups;
+import wappy.client.mail.MailClient;
 
 import com.extjs.gxt.ui.client.event.ButtonEvent;
-import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.widget.VerticalPanel;
@@ -21,6 +19,7 @@ import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.pathf.gwt.util.json.client.JSONWrapper;
 
 public class Frontend implements EntryPoint {
 	private Window mailWindow = new Window();
@@ -33,7 +32,7 @@ public class Frontend implements EntryPoint {
     private Desktop desktop;
 
     public void onModuleLoad() {
-        mailWindow.setSize(800, 600);  
+    	mailWindow.setSize(800, 600);  
         mailWindow.setPlain(true);  
         mailWindow.setHeading("Mail");  
         mailWindow.setLayout(new FitLayout());
@@ -48,13 +47,14 @@ public class Frontend implements EntryPoint {
         calendarWindow.setMinimizable(true);
         calendarWindow.setMaximizable(true);
         calendarWindow.add(calendar);
-
-        groupsWindow.setSize(350, 550);
+        
+        groupsWindow.setHeight(550);
+        groupsWindow.setMinWidth(370);
         groupsWindow.setPlain(true);  
         groupsWindow.setHeading("Groups");  
         groupsWindow.setLayout(new FitLayout());  
         groupsWindow.setMinimizable(true);
-        groupsWindow.setMaximizable(true);
+        groupsWindow.setMaximizable(false);
         groupsWindow.add(new Groups());
 
         bookmarksWindow.setSize(300, 500);
@@ -62,7 +62,7 @@ public class Frontend implements EntryPoint {
         bookmarksWindow.setHeading("Bookmarks");  
         bookmarksWindow.setLayout(new FitLayout());  
         bookmarksWindow.setMinimizable(true);
-        bookmarksWindow.setMaximizable(true);
+        bookmarksWindow.setMaximizable(false);
         bookmarksWindow.add(new Bookmarks());
 
         initDesktopView();
@@ -109,7 +109,7 @@ public class Frontend implements EntryPoint {
 	private void initDesktopView() {
 		desktop = new Desktop();
 		desktop.getDesktop().setStyleName("wappy-desktop-background");
-
+		
 		SelectionListener<MenuEvent> menuListener =
         new SelectionListener<MenuEvent>() {
 			@Override
@@ -140,7 +140,8 @@ public class Frontend implements EntryPoint {
 		TaskBar taskBar = desktop.getTaskBar();
 
 		StartMenu startMenu = taskBar.getStartMenu();
-		startMenu.setHeading("wappy online applications");
+//		startMenu.setHeading("wappy online applications");
+		loadCurrentUserName();
 		startMenu.setIconStyle("wappy-startmenu-user");
 
         final MenuItem mailMenuItem = new MenuItem("Mail");
@@ -180,6 +181,31 @@ public class Frontend implements EntryPoint {
 		});
 		logout.setStyleName("wappy-startmenu-logout");
 		startMenu.addTool(logout);
+	}
+
+	private void loadCurrentUserName() {
+		/*
+		ResponseHandler rh = new ResponseHandler() {
+			@Override
+			public void onSuccess(JSONValue value) {
+				GroupsJSON jsonUtil = new GroupsJSON(value);            
+	            if (jsonUtil.noErrors()) {
+	            	desktop.getTaskBar().getStartMenu().setHeading(
+	            			jsonUtil.getCurrentUserName());
+	            }
+	    		else {	
+	    			MessageBox.alert("getCurrentUser", 
+	    					jsonUtil.getErrorVal(), null);
+	    		}
+			}
+		};
+		ServerComm.loadCurrentUser(rh);
+		*/			
+		new SimpleJSON() {
+			public void onSuccess(JSONWrapper response) {
+				desktop.getTaskBar().getStartMenu().setHeading(response.stringValue());
+			}
+		}.query("/welcome/username/", "");
 	}
 
 	private void openMail() {

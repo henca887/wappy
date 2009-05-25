@@ -16,7 +16,10 @@
   <!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
 
   <!-- Other module inherits                                      -->
+  <stylesheet src="/frontend/css/gxt-all.css" />
   <stylesheet src="/frontend/Frontend.css" /> 
+  <stylesheet src="/frontend/Calendar.css" /> 
+  <stylesheet src="/frontend/Groups.css" /> 
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='wappy.client.Frontend'/>

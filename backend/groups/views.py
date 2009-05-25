@@ -2,8 +2,10 @@ import time
 from django.http import HttpResponse
 from django.utils import simplejson
 from django.contrib.auth.models import User
-from backend.utils.decorators import login_required_json
-from backend.groups.models import Group, Membership
+#from backend.utils.decorators import login_required_json
+#from backend.groups.models import Group, Membership
+from utils.decorators import login_required_json
+from groups.models import Group, Membership
 
 def json_http_response(dict):
     return HttpResponse(simplejson.dumps(dict),
@@ -87,6 +89,7 @@ def get_groups(request):
 @login_required_json
 def rem_group(request):
     kwargs = simplejson.loads(request.raw_post_data)
+    #print 'kwargs:', kwargs
     gr_name = kwargs['name']
     
     try:
@@ -147,9 +150,16 @@ def rem_member(request):
 
     try:
         gr = Group.objects.get(name=gr_name)
-        if request.user.memberships.get(group=gr).is_admin:
-            mmbr = User.objects.get(username=user_name)
-            mship = Membership.objects.get(user=mmbr, group=gr)
+        mmbr = User.objects.get(username=user_name)
+        mship = mmbr.memberships.get(group=gr)
+        my_mship = request.user.memberships.get(group=gr)
+        if mship.is_owner:
+            return json_http_response({'error': 'You can not remove the owner!',
+                                       'result': None})
+        elif mship.is_admin and not my_mship.is_owner:
+            return json_http_response({'error': 'Only owner can remove an admin!',
+                                       'result': None})
+        elif my_mship.is_admin:
             mship.delete()
             response_dict = {'error': None,
                              'result': 'Member removed!'}

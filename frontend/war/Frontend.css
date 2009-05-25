@@ -69,14 +69,3 @@
 .wappy-icon-remove {
   background: url(images/wappy/fam/delete.gif) no-repeat !important;
 }
-
-/** Calendar style rules. */
-@import "Calendar.css";
-
-/** Groups style rules. */
-@import "Groups.css";
-
-
-
-
-

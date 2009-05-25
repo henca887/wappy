@@ -15,4 +15,5 @@ urlpatterns = patterns('',
     (r'^wcalendar/', include('backend.wcalendar.urls')),
     (r'^shareables/', include('backend.shareables.urls')),
     (r'^bookmarks/', include('backend.bookmarks.urls')),
+    (r'^welcome/', include('backend.welcome.urls')),
 )

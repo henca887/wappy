@@ -24,7 +24,7 @@ public class GridsView extends LayoutContainer implements CalendarView {
 	
 	public GridsView() {
 		setLayout(new FitLayout());  
-		setSize(785, 540);
+		//setSize(785, 540);
 		
 		store.groupBy("weekNr");
 		store.setDefaultSort("date", SortDir.ASC);

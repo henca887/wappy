@@ -66,11 +66,11 @@ public class GroupsView extends LayoutContainer{
 	}
 
 	public String getMembersGroupName() {
-		return selectedItem.getParentItem().getText();
+		return selectedItem.getParentItem().getId();
 	}
 
 	public String getGroupName() {
-		return selectedItem.getText();
+		return selectedItem.getId();
 	}
 
 	public void removeItem() {
@@ -84,15 +84,14 @@ public class GroupsView extends LayoutContainer{
 		String cId = pId + cName;
 		child.setText(cName);
 		child.setId(cId);
-		parent.add(child);
+		
 		if (member.isOwner()) {
-//			tree.getItemById(cId).setStyleName("wappy-groups-owner-icon");
-			tree.getItemById(cId).setIconStyle("wappy-groups-owner-icon");
+			child.setStyleName("wappy-groups-owner-icon");
 		}
 		else if (member.isAdmin()) {
-//			tree.getItemById(cId).setStyleName("wappy-groups-admin-icon");
-			tree.getItemById(cId).setIconStyle("wappy-groups-admin-icon");
+			child.setStyleName("wappy-groups-admin-icon");
 		}
+		parent.add(child);
 		return child;
 	}
 
@@ -102,19 +101,18 @@ public class GroupsView extends LayoutContainer{
 		String grName = group.getName();
 		parent.setId(grName);
 		
-		tree.getRootItem().add(parent);
-		parent.setText(grName);
 		if (group.isOwner()) {
-//			tree.getItemById(grName).setStyleName("wappy-groups-owner-icon");
-			tree.getItemById(grName).setIconStyle("wappy-groups-owner-icon");
+			parent.setText(grName + "(Owner)");
 		}
 		else if (group.isAdmin()) {
-//			tree.getItemById(grName).setStyleName("wappy-groups-admin-icon");
-			tree.getItemById(grName).setIconStyle("wappy-groups-admin-icon");
+			parent.setText(grName + "(Admin)");
 		}
 		else {
-			tree.getItemById(grName).setIconStyle("wappy-groups-group-icon");
+			parent.setText(grName);
 		}
+//		tree.getItemById(grName).setIconStyle("wappy-groups-group-icon");
+		parent.setIconStyle("wappy-groups-group-icon");
+		tree.getRootItem().add(parent);
 		List<Member> members = group.getMembers();
 		if(members != null) {
 			for (int m = 0; m < members.size(); m++) {

@@ -117,7 +117,7 @@ public class BookingForm {
 						String subject = subjectField.getValue();
 						String descr = descriptionField.getValue();
 						String location = locationField.getValue();
-						// DEBUG:SOLVED: better if weekNr could be generated on client
+						// weekNr is generated at server
 						long weekNr = 0;
 						appointment = new Appointment(subject, descr,
 								location, startTimeStamp, endTimeStamp, weekNr);

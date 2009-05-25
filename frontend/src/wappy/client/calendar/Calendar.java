@@ -4,20 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import wappy.client.ResponseHandler;
-import wappy.client.calculator.Calculator;
 
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.Info;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
-import com.extjs.gxt.ui.client.widget.Window;
-import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.button.SplitButton;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.SeparatorToolItem;
@@ -26,11 +21,8 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
 
-public class Calendar extends LayoutContainer {
-	private Calculator calc = new Calculator();
-	private Window calcWin = new Window();
-
-	private ContentPanel rootPanel = new ContentPanel();
+public class Calendar extends ContentPanel {
+	//private ContentPanel rootPanel = new ContentPanel();
 	private BookingForm bookingForm;
 	private GridsView calView = new GridsView();
 	
@@ -47,16 +39,12 @@ public class Calendar extends LayoutContainer {
 	};
 	
 	public Calendar() {
-		setLayout(new FlowLayout());
-		
-		calcWin.setLayout(new FitLayout());
-		calcWin.add(calc);
+		setLayout(new FitLayout());
 		
 		getCurrentCalendar();
 		bookingForm = new BookingForm(onAppointmentCreated);
 		
-		rootPanel.setHeaderVisible(false);
-//		rootPanel.setLayout(new FitLayout());
+		setHeaderVisible(false);
 		
 		Menu addMenu = createAddMenu();
 		Menu remMenu = createRemMenu();
@@ -85,17 +73,10 @@ public class Calendar extends LayoutContainer {
 		toolBar.add(new SeparatorToolItem());
 		toolBar.add(remBtn);
 		toolBar.add(new SeparatorToolItem());
-		toolBar.add(new Button("Calculator", new SelectionListener<ButtonEvent> (){
-			@Override
-			public void componentSelected(ButtonEvent ce) {
-				calcWin.show();
-				calcWin.toFront();
-			}
-		}));
-
-		rootPanel.add(toolBar);
-		rootPanel.add(calView);
-		add(rootPanel);
+		
+		setTopComponent(toolBar);
+		add(calView);
+		//add(rootPanel);
 	}
 
 	private Menu createAddMenu() {
@@ -203,9 +184,7 @@ public class Calendar extends LayoutContainer {
 			public void onSuccess(JSONValue value) {
 				CalendarJSON jsonUtil = new CalendarJSON(value);            
                 if (jsonUtil.noErrors()) {
-        			Info.display("Calendar",
-                    		"Calendar contents have been retrieved!");
-                    appointments = jsonUtil.getAllAppointments();
+        			appointments = jsonUtil.getAllAppointments();
                     calView.update(appointments);
                 }
         		else {

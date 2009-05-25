@@ -5,6 +5,7 @@ import java.util.List;
 
 import wappy.client.ResponseHandler;
 
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
@@ -18,11 +19,11 @@ import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Command;
 
-public class Groups extends LayoutContainer{
+public class Groups extends ContentPanel{
 	private CreateForm createForm;
 	private AddMemberForm addForm;
 	private GroupsView view;
-	private ContentPanel panel = new ContentPanel();
+//	private ContentPanel panel = new ContentPanel();
 	private List<Group> groups = new ArrayList<Group>();
 	private List<Group> myAdminGroups = new ArrayList<Group>();
 	
@@ -109,9 +110,10 @@ public class Groups extends LayoutContainer{
 		createForm = new CreateForm(onGroupCreated);
 		addForm = new AddMemberForm(onMemberAdded);
 				
-		panel.setLayout(new FlowLayout());
-		panel.setHeaderVisible(false);
-		panel.setCollapsible(false);
+		setLayout(new FlowLayout());
+		setHeaderVisible(false);
+		setCollapsible(false);
+		setScrollMode(Scroll.AUTOY);
 		
 		ToolBar toolBar = new ToolBar();
 		
@@ -126,11 +128,12 @@ public class Groups extends LayoutContainer{
 
 		toolBar.add(addBtn);
 		
-		panel.add(toolBar);
-		panel.add(createForm);
-		panel.add(addForm);
-		panel.add(view);
-		add(panel);
+		add(toolBar);
+		add(createForm);
+		add(addForm);
+		add(view);
+		
+//		add(panel);
 	}
 
 	private void removeFromGroupsList(String groupName) {
@@ -156,14 +159,10 @@ public class Groups extends LayoutContainer{
                 if (jsonUtil.noErrors()) {
 					groups = jsonUtil.getGroups();
 					getMyAdminGroups();
-					Info.display("DEBUG:Groups:getGroups: Success",
-                    		"Groups have been retrieved!");
-        			
 					view.insert(groups);
                 }
         		else {
         			addBtn.setEnabled(false);
-        			Info.display("Groups", jsonUtil.getErrorVal());
         		}
 			}
 		};
